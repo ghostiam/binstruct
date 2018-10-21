@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_UnmarshalOffsets(t *testing.T) {
+func Test_Offsets(t *testing.T) {
 	data := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}
 
 	type dataStruct struct {
@@ -42,7 +42,7 @@ func Test_UnmarshalOffsets(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalIntBE(t *testing.T) {
+func Test_IntBE(t *testing.T) {
 	data := []byte{
 		0x01,
 		0x00, 0x02,
@@ -67,7 +67,7 @@ func Test_UnmarshalIntBE(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalIntBETag(t *testing.T) {
+func Test_IntBETag(t *testing.T) {
 	data := []byte{
 		0x01,
 		0x00, 0x02,
@@ -92,7 +92,7 @@ func Test_UnmarshalIntBETag(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalUintBE(t *testing.T) {
+func Test_UintBE(t *testing.T) {
 	data := []byte{
 		0x01,
 		0x00, 0x02,
@@ -117,7 +117,7 @@ func Test_UnmarshalUintBE(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalUintBETag(t *testing.T) {
+func Test_UintBETag(t *testing.T) {
 	data := []byte{
 		0x01,
 		0x00, 0x02,
@@ -142,7 +142,7 @@ func Test_UnmarshalUintBETag(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalFloatBE(t *testing.T) {
+func Test_FloatBE(t *testing.T) {
 	data := []byte{
 		0x40, 0x49, 0x0f, 0xdb,
 		0x40, 0x09, 0x21, 0xfb, 0x54, 0x44, 0x2d, 0x18,
@@ -164,7 +164,7 @@ func Test_UnmarshalFloatBE(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalSlice(t *testing.T) {
+func Test_Slice(t *testing.T) {
 	data := []byte{
 		0x00, 0x01,
 		0x00, 0x02,
@@ -186,7 +186,7 @@ func Test_UnmarshalSlice(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalSliceOfSlice(t *testing.T) {
+func Test_SliceOfSlice(t *testing.T) {
 	data := []byte{
 		0x00, 0x01,
 		0x00, 0x02,
@@ -208,7 +208,33 @@ func Test_UnmarshalSliceOfSlice(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
-func Test_UnmarshalArray(t *testing.T) {
+func Test_SliceOfSliceOfSlice(t *testing.T) {
+	data := []byte{
+		0x00, 0x01,
+		0x00, 0x02,
+		0x00, 0x03,
+		0x00, 0x04,
+		0x00, 0x05,
+		0x00, 0x06,
+		0x00, 0x07,
+		0x00, 0x08,
+	}
+
+	type dataStruct struct {
+		Arr [][][]int16 `bin:"len:2,[len:2,[len:2]]"`
+	}
+
+	want := dataStruct{
+		Arr: [][][]int16{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}},
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_Array(t *testing.T) {
 	data := []byte{
 		0x00, 0x01,
 		0x00, 0x02,
@@ -225,6 +251,232 @@ func Test_UnmarshalArray(t *testing.T) {
 	}
 
 	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_ArrayOfArray(t *testing.T) {
+	data := []byte{
+		0x00, 0x01,
+		0x00, 0x02,
+		0x00, 0x03,
+		0x00, 0x04,
+	}
+
+	type dataStruct struct {
+		Arr [2][2]int16
+	}
+
+	want := dataStruct{
+		Arr: [2][2]int16{{1, 2}, {3, 4}},
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_ArrayOfArrayOfArray(t *testing.T) {
+	data := []byte{
+		0x00, 0x01,
+		0x00, 0x02,
+		0x00, 0x03,
+		0x00, 0x04,
+		0x00, 0x05,
+		0x00, 0x06,
+		0x00, 0x07,
+		0x00, 0x08,
+	}
+
+	type dataStruct struct {
+		Arr [2][2][2]int16
+	}
+
+	want := dataStruct{
+		Arr: [2][2][2]int16{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}},
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_ByteArray(t *testing.T) {
+	data := []byte{0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}
+
+	type dataStruct struct {
+		B [4]byte
+	}
+
+	want := dataStruct{
+		B: [4]byte{0x0A, 0x0B, 0x0C, 0x0D},
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_ByteSlice(t *testing.T) {
+	data := []byte{0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}
+
+	type dataStruct struct {
+		B []byte `bin:"len:4"`
+	}
+
+	want := dataStruct{
+		B: []byte{0x0A, 0x0B, 0x0C, 0x0D},
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_StringEmpty(t *testing.T) {
+	data := []byte{}
+
+	type dataStruct struct {
+		Str string `bin:"len:0"`
+	}
+
+	want := dataStruct{
+		Str: "",
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_String(t *testing.T) {
+	data := []byte{'h', 'e', 'l', 'l', 'o'}
+
+	type dataStruct struct {
+		Str string `bin:"len:5"`
+	}
+
+	want := dataStruct{
+		Str: "hello",
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_StringWithLenFromField(t *testing.T) {
+	data := []byte{0x00, 0x05, 'h', 'e', 'l', 'l', 'o'}
+
+	type dataStruct struct {
+		StrLen int16
+		Str    string `bin:"len:StrLen"`
+	}
+
+	want := dataStruct{
+		StrLen: 5,
+		Str:    "hello",
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+type dataCustomMethod1Struct struct {
+	Custom map[string]string `bin:"CustomMap"`
+}
+
+func (d *dataCustomMethod1Struct) CustomMap(r ReadSeekPeeker) error {
+	m := make(map[string]string)
+
+	lenMap, err := r.ReadInt8()
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < int(lenMap); i++ {
+		_, name, err := r.ReadBytes(1)
+		if err != nil {
+			return err
+		}
+
+		_, value, err := r.ReadBytes(1)
+		if err != nil {
+			return err
+		}
+
+		m[string(name)] = string(value)
+	}
+
+	d.Custom = m
+	return nil
+}
+
+func Test_CustomMethod1(t *testing.T) {
+	data := []byte{0x03, 'q', 'w', 'e', 'r', 't', 'y'}
+
+	want := dataCustomMethod1Struct{
+		Custom: map[string]string{"q": "w", "e": "r", "t": "y"},
+	}
+
+	var actual dataCustomMethod1Struct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+type dataCustomMethod2Struct struct {
+	Custom [2]map[string]string `bin:"len:2,[CustomMap]"`
+}
+
+func (*dataCustomMethod2Struct) CustomMap(r ReadSeekPeeker) (map[string]string, error) {
+	m := make(map[string]string)
+
+	lenMap, err := r.ReadInt8()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < int(lenMap); i++ {
+		_, name, err := r.ReadBytes(1)
+		if err != nil {
+			return nil, err
+		}
+
+		_, value, err := r.ReadBytes(1)
+		if err != nil {
+			return nil, err
+		}
+
+		m[string(name)] = string(value)
+	}
+
+	return m, nil
+}
+
+func Test_CustomMethod2(t *testing.T) {
+	data := []byte{
+		0x03, 'q', 'w', 'e', 'r', 't', 'y',
+		0x03, 'a', 's', 'd', 'f', 'g', 'h',
+	}
+
+	want := dataCustomMethod2Struct{
+		Custom: [2]map[string]string{
+			{"q": "w", "e": "r", "t": "y"},
+			{"a": "s", "d": "f", "g": "h"},
+		},
+	}
+
+	var actual dataCustomMethod2Struct
 	err := UnmarshalBE(data, &actual)
 	require.NoError(t, err)
 	require.Equal(t, want, actual)

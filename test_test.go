@@ -29,8 +29,11 @@ type data struct {
 
 	Skip []byte `bin:"-"`
 
-	Custom custom
+	Custom custom  `bin:"Test"`
 }
+
+func (d *data) Test() {}
+
 
 func (d *data) StringFunc(r ReadSeekPeeker) (string, error) {
 	_, _, err := r.ReadBytes(1)

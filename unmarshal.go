@@ -91,19 +91,19 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 		var err error
 
 		switch {
-		case fieldData.Length == 1 || fieldValue.Kind() == reflect.Int8:
+		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Int8:
 			v, e := u.r.ReadInt8()
 			value = int64(v)
 			err = e
-		case fieldData.Length == 2 || fieldValue.Kind() == reflect.Int16:
+		case fieldData.Length != nil && *fieldData.Length == 2 || fieldValue.Kind() == reflect.Int16:
 			v, e := u.r.ReadInt16()
 			value = int64(v)
 			err = e
-		case fieldData.Length == 4 || fieldValue.Kind() == reflect.Int32:
+		case fieldData.Length != nil && *fieldData.Length == 4 || fieldValue.Kind() == reflect.Int32:
 			v, e := u.r.ReadInt32()
 			value = int64(v)
 			err = e
-		case fieldData.Length == 8 || fieldValue.Kind() == reflect.Int64:
+		case fieldData.Length != nil && *fieldData.Length == 8 || fieldValue.Kind() == reflect.Int64:
 			value, err = u.r.ReadInt64()
 		default: // reflect.Int:
 			err = errors.New("need set tag with len or use int8/int16/int32/int64")
@@ -120,19 +120,19 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 		var err error
 
 		switch {
-		case fieldData.Length == 1 || fieldValue.Kind() == reflect.Uint8:
+		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Uint8:
 			v, e := u.r.ReadUint8()
 			value = uint64(v)
 			err = e
-		case fieldData.Length == 2 || fieldValue.Kind() == reflect.Uint16:
+		case fieldData.Length != nil && *fieldData.Length == 2 || fieldValue.Kind() == reflect.Uint16:
 			v, e := u.r.ReadUint16()
 			value = uint64(v)
 			err = e
-		case fieldData.Length == 4 || fieldValue.Kind() == reflect.Uint32:
+		case fieldData.Length != nil && *fieldData.Length == 4 || fieldValue.Kind() == reflect.Uint32:
 			v, e := u.r.ReadUint32()
 			value = uint64(v)
 			err = e
-		case fieldData.Length == 8 || fieldValue.Kind() == reflect.Uint64:
+		case fieldData.Length != nil && *fieldData.Length == 8 || fieldValue.Kind() == reflect.Uint64:
 			value, err = u.r.ReadUint64()
 		default: // reflect.Uint:
 			err = errors.New("need set tag with len or use uint8/uint16/uint32/uint64")
@@ -162,12 +162,21 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 		if fieldValue.CanSet() {
 			fieldValue.SetFloat(f)
 		}
+	case reflect.Bool:
+		b, err := u.r.ReadBool()
+		if err != nil {
+			return err
+		}
+
+		if fieldValue.CanSet() {
+			fieldValue.SetBool(b)
+		}
 	case reflect.String:
-		if fieldData.Length == 0 {
+		if fieldData.Length == nil {
 			return errors.New("need set tag with len for string")
 		}
 
-		_, b, err := u.r.ReadBytes(int(fieldData.Length))
+		_, b, err := u.r.ReadBytes(int(*fieldData.Length))
 		if err != nil {
 			return err
 		}
@@ -176,7 +185,11 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 			fieldValue.SetString(string(b))
 		}
 	case reflect.Slice:
-		for i := int64(0); i < fieldData.Length; i++ {
+		if fieldData.Length == nil {
+			return errors.New("need set tag with len for slice")
+		}
+
+		for i := int64(0); i < *fieldData.Length; i++ {
 			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
 			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData)
 			if err != nil {
@@ -187,7 +200,12 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 			}
 		}
 	case reflect.Array:
-		arrLen := fieldData.Length
+		var arrLen int64
+
+		if fieldData.Length != nil {
+			arrLen = *fieldData.Length
+		}
+
 		if arrLen == 0 {
 			arrLen = int64(fieldValue.Len())
 		}
@@ -208,7 +226,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 			panic(err)
 		}
 	default:
-		panic("KIND: " + fieldValue.Kind().String())
+		panic("KIND not supported: " + fieldValue.Kind().String())
 	}
 
 	return nil
@@ -216,7 +234,9 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 func callFunc(r ReadSeekPeeker, funcName string, structValue, fieldValue reflect.Value) (bool, error) {
 	// Call methods
 	m := structValue.Addr().MethodByName(funcName)
-	if m.IsValid() {
+
+	readSeekPeekerType := reflect.TypeOf((*ReadSeekPeeker)(nil)).Elem()
+	if m.IsValid() && m.Type().NumIn() == 1 && m.Type().In(0) == readSeekPeekerType {
 		ret := m.Call([]reflect.Value{reflect.ValueOf(r)})
 
 		errorType := reflect.TypeOf((*error)(nil)).Elem()

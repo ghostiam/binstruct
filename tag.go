@@ -17,8 +17,8 @@ const (
 )
 
 const (
-	tagTypeIgnore  = "-"
 	tagTypeEmpty   = ""
+	tagTypeIgnore  = "-"
 	tagTypeFunc    = "func"
 	tagTypeElement = "elem"
 
@@ -38,18 +38,51 @@ type tag struct {
 func parseTag(t string) []tag {
 	var tags []tag
 
-	split := strings.Split(t, ",")
-	for _, v := range split {
+	for {
+		var v string
+
+		index := strings.Index(t, ",")
+		switch {
+		case index == -1:
+			v = t
+		default:
+			v = t[:index]
+			t = t[index+1:]
+		}
+
 		v = strings.TrimSpace(v)
 
 		switch {
+		case v == tagTypeEmpty:
+			// Just skip
 		case v == tagTypeIgnore:
 			tags = append(tags, tag{Type: tagTypeIgnore})
-		case v == tagTypeEmpty:
-			tags = append(tags, tag{Type: tagTypeEmpty})
-		case strings.HasPrefix(v, "[") && strings.HasSuffix(v, "]"):
-			elem := v[1 : len(v)-1]
-			tags = append(tags, tag{Type: tagTypeElement, ElemTags: parseTag(elem)})
+		case strings.HasPrefix(v, "["):
+			v = v + "," + t
+			var arrBalance int
+			var closeIndex int
+			for {
+				in := v[closeIndex:]
+				idx := strings.IndexAny(in, "[]")
+				closeIndex = closeIndex + idx
+
+				switch in[idx] {
+				case '[':
+					arrBalance--
+				case ']':
+					arrBalance++
+				}
+
+				closeIndex++
+
+				if arrBalance == 0 {
+					break
+				}
+			}
+
+			t = v[closeIndex:]
+			v = v[1 : closeIndex-1]
+			tags = append(tags, tag{Type: tagTypeElement, ElemTags: parseTag(v)})
 		default:
 			t := strings.Split(v, ":")
 
@@ -65,6 +98,10 @@ func parseTag(t string) []tag {
 				})
 			}
 		}
+
+		if index == -1 {
+			return tags
+		}
 	}
 
 	return tags
@@ -72,7 +109,7 @@ func parseTag(t string) []tag {
 
 type fieldReadData struct {
 	Ignore            bool
-	Length            int64
+	Length            *int64
 	OffsetFromCurrent *int64
 	OffsetFromStart   *int64
 	OffsetFromEnd     *int64
@@ -106,7 +143,9 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 			return &fieldReadData{Ignore: true}, nil
 
 		case tagTypeLength:
-			data.Length, err = parseValue(t.Value)
+			var length int64
+			length, err = parseValue(t.Value)
+			data.Length = &length
 
 		case tagTypeOffsetFromCurrent:
 			var offset int64
