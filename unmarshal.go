@@ -2,7 +2,6 @@ package binstruct
 
 import (
 	"github.com/pkg/errors"
-	"io"
 	"reflect"
 	"strings"
 )
@@ -15,6 +14,10 @@ BinaryUnmarshaler /usr/local/opt/go/libexec/src/encoding/encoding.go:28
 
 type unmarshal struct {
 	r ReadSeekPeeker
+}
+
+type Unmarshaler interface {
+	Unmarshal(v interface{}) error
 }
 
 type InvalidUnmarshalError struct {
@@ -268,20 +271,8 @@ or
 }
 
 func setOffset(r ReadSeekPeeker, fieldData *fieldReadData) error {
-	if fieldData.OffsetFromCurrent != nil {
-		_, err := r.Seek(*fieldData.OffsetFromCurrent, io.SeekCurrent)
-		if err != nil {
-			return err
-		}
-	}
-	if fieldData.OffsetFromStart != nil {
-		_, err := r.Seek(*fieldData.OffsetFromStart, io.SeekStart)
-		if err != nil {
-			return err
-		}
-	}
-	if fieldData.OffsetFromEnd != nil {
-		_, err := r.Seek(*fieldData.OffsetFromEnd, io.SeekEnd)
+	for _, v := range fieldData.Offsets {
+		_, err := r.Seek(v.Offset, v.Whence)
 		if err != nil {
 			return err
 		}

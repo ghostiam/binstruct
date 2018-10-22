@@ -42,6 +42,25 @@ func Test_Offsets(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
+func Test_OffsetsMany(t *testing.T) {
+	data := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}
+
+	type dataStruct struct {
+		ManyOffset  byte `bin:"offsetStart:2, offset:4, offset:-2"`
+		CheckOffset byte `bin:"offsetStart:4"`
+	}
+
+	want := dataStruct{
+		ManyOffset:  0x05,
+		CheckOffset: 0x05,
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
 func Test_IntBE(t *testing.T) {
 	data := []byte{
 		0x01,

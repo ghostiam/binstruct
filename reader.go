@@ -47,6 +47,7 @@ type ReadSeekPeeker interface {
 	Reader
 	Seeker
 	Peeker
+	Unmarshaler
 }
 
 func NewReader(r io.ReadSeeker, order binary.ByteOrder, debug bool) ReadSeekPeeker {
@@ -62,6 +63,11 @@ type readSeekPeeker struct {
 	order binary.ByteOrder
 
 	debug bool
+}
+
+func (r *readSeekPeeker) Unmarshal(v interface{}) error {
+	u := &unmarshal{r}
+	return u.Unmarshal(v)
 }
 
 func (r *readSeekPeeker) ReadAll() ([]byte, error) {

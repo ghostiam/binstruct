@@ -2,6 +2,7 @@ package binstruct
 
 import (
 	"github.com/pkg/errors"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -107,13 +108,16 @@ func parseTag(t string) []tag {
 	return tags
 }
 
+type fieldOffset struct {
+	Offset int64
+	Whence int
+}
+
 type fieldReadData struct {
-	Ignore            bool
-	Length            *int64
-	OffsetFromCurrent *int64
-	OffsetFromStart   *int64
-	OffsetFromEnd     *int64
-	FuncName          string
+	Ignore   bool
+	Length   *int64
+	Offsets  []fieldOffset
+	FuncName string
 
 	ElemFieldData *fieldReadData // if type Element
 }
@@ -150,17 +154,26 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 		case tagTypeOffsetFromCurrent:
 			var offset int64
 			offset, err = parseValue(t.Value)
-			data.OffsetFromCurrent = &offset
+			data.Offsets = append(data.Offsets, fieldOffset{
+				Offset: offset,
+				Whence: io.SeekCurrent,
+			})
 
 		case tagTypeOffsetFromStart:
 			var offset int64
 			offset, err = parseValue(t.Value)
-			data.OffsetFromStart = &offset
+			data.Offsets = append(data.Offsets, fieldOffset{
+				Offset: offset,
+				Whence: io.SeekStart,
+			})
 
 		case tagTypeOffsetFromEnd:
 			var offset int64
 			offset, err = parseValue(t.Value)
-			data.OffsetFromEnd = &offset
+			data.Offsets = append(data.Offsets, fieldOffset{
+				Offset: offset,
+				Whence: io.SeekEnd,
+			})
 
 		case tagTypeFunc:
 			data.FuncName = t.Value
