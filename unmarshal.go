@@ -281,7 +281,7 @@ or
 	return false, errors.New(message)
 }
 
-func setOffset(r ReadSeekPeeker, fieldData *fieldReadData) error {
+func setOffset(r Seeker, fieldData *fieldReadData) error {
 	for _, v := range fieldData.Offsets {
 		_, err := r.Seek(v.Offset, v.Whence)
 		if err != nil {

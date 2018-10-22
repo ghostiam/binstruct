@@ -42,6 +42,10 @@ func (d *data) StringFunc(r ReadSeekPeeker) (string, error) {
 	}
 
 	lenStr, err := r.ReadUint16()
+	if err != nil {
+		return "", err
+	}
+
 	_, str, err := r.ReadBytes(int(lenStr))
 	if err != nil {
 		return "", err
@@ -60,6 +64,10 @@ func (d *data) MapFunc(r ReadSeekPeeker) error {
 		}
 
 		lenStr, err := r.ReadUint16()
+		if err != nil {
+			return err
+		}
+
 		_, str, err := r.ReadBytes(int(lenStr))
 		if err != nil {
 			return err

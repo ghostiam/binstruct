@@ -212,6 +212,10 @@ func (r *readSeekPeeker) Seek(offset int64, whence int) (int64, error) {
 
 func (r *readSeekPeeker) Peek(n int) ([]byte, error) {
 	rn, b, err := r.ReadBytes(n)
-	r.Seek(int64(-rn), io.SeekCurrent) // set offset back
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = r.Seek(int64(-rn), io.SeekCurrent) // set offset back
 	return b, err
 }
