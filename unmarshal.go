@@ -1,9 +1,10 @@
 package binstruct
 
 import (
-	"github.com/pkg/errors"
 	"reflect"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 /*

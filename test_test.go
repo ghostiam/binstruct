@@ -5,9 +5,10 @@ package binstruct
 import (
 	"bytes"
 	"encoding/binary"
+	"testing"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type custom struct {
@@ -29,11 +30,10 @@ type data struct {
 
 	Skip []byte `bin:"-"`
 
-	Custom custom  `bin:"Test"`
+	Custom custom `bin:"Test"`
 }
 
 func (d *data) Test() {}
-
 
 func (d *data) StringFunc(r ReadSeekPeeker) (string, error) {
 	_, _, err := r.ReadBytes(1)
@@ -126,4 +126,3 @@ func Test_Decoder(t *testing.T) {
 
 	require.Equal(t, want, actual, spew.Sdump(actual))
 }
-

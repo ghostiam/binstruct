@@ -1,11 +1,12 @@
 package binstruct
 
 import (
-	"github.com/pkg/errors"
 	"io"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 const (

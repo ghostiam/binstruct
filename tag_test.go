@@ -1,8 +1,9 @@
 package binstruct
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_parseTag(t *testing.T) {
@@ -67,24 +68,24 @@ func Test_parseTag(t *testing.T) {
 			want: []tag{
 				{
 					Type: "elem", Value: "", ElemTags: []tag{
-					{
-						Type: "len", Value: "1", ElemTags: []tag(nil),
-					},
-					{
-						Type: "elem", Value: "", ElemTags: []tag{
 						{
-							Type: "len", Value: "2", ElemTags: []tag(nil),
+							Type: "len", Value: "1", ElemTags: []tag(nil),
 						},
 						{
 							Type: "elem", Value: "", ElemTags: []tag{
-							{
-								Type: "func", Value: "len3", ElemTags: []tag(nil),
+								{
+									Type: "len", Value: "2", ElemTags: []tag(nil),
+								},
+								{
+									Type: "elem", Value: "", ElemTags: []tag{
+										{
+											Type: "func", Value: "len3", ElemTags: []tag(nil),
+										},
+									},
+								},
 							},
 						},
-						},
 					},
-					},
-				},
 				},
 				{
 					Type: "offset", Value: "42", ElemTags: []tag(nil),

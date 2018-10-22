@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
+	"os"
+
 	"github.com/GhostRussia/binstruct"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/log"
-	"io"
-	"os"
 )
 
 // https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
