@@ -107,6 +107,9 @@ func Test_parseReadDataFromTags(t *testing.T) {
 		structValue reflect.Value
 		tags        []tag
 	}
+	ptrInt := func(i int64) *int64 {
+		return &i
+	}
 	tests := []struct {
 		name string
 		args args
@@ -124,10 +127,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(7)
-					return &i
-				}(),
+				Length: ptrInt(7),
 			},
 		},
 		{
@@ -142,10 +142,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(3)
-					return &i
-				}(),
+				Length: ptrInt(3),
 			},
 		},
 		{
@@ -164,10 +161,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(7)
-					return &i
-				}(),
+				Length: ptrInt(7),
 			},
 		},
 		{
@@ -186,10 +180,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(3)
-					return &i
-				}(),
+				Length: ptrInt(3),
 			},
 		},
 		{
@@ -210,10 +201,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(10)
-					return &i
-				}(),
+				Length: ptrInt(10),
 			},
 		},
 		{
@@ -228,10 +216,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(-10)
-					return &i
-				}(),
+				Length: ptrInt(-10),
 			},
 		},
 		{
@@ -246,10 +231,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(-15)
-					return &i
-				}(),
+				Length: ptrInt(-15),
 			},
 		},
 		{
@@ -264,10 +246,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				},
 			},
 			want: &fieldReadData{
-				Length: func() *int64 {
-					i := int64(-10)
-					return &i
-				}(),
+				Length: ptrInt(-10),
 			},
 		},
 	}

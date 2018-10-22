@@ -31,7 +31,7 @@ func (*dataWithNullTerminatedString) NullTerminatedString(r ReadSeekPeeker) (str
 	return string(b), nil
 }
 
-func Example_DecoderDataWithNullTerminatedString() {
+func Example_decoderDataWithNullTerminatedString() {
 	b := []byte{
 		// ID
 		0x00, 0x00, 0x00, 0x05,

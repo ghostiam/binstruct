@@ -66,7 +66,7 @@ func parseTag(t string) []tag {
 			for {
 				in := v[closeIndex:]
 				idx := strings.IndexAny(in, "[]")
-				closeIndex = closeIndex + idx
+				closeIndex += idx
 
 				switch in[idx] {
 				case '[':
@@ -105,8 +105,6 @@ func parseTag(t string) []tag {
 			return tags
 		}
 	}
-
-	return tags
 }
 
 type fieldOffset struct {
@@ -123,7 +121,7 @@ type fieldReadData struct {
 	ElemFieldData *fieldReadData // if type Element
 }
 
-func parseCalc(v string) (nums []string, ops []string, err error) {
+func parseCalc(v string) (nums, ops []string) {
 	cur := v
 	for {
 		idx := strings.IndexAny(cur, "+-")
@@ -138,7 +136,7 @@ func parseCalc(v string) (nums []string, ops []string, err error) {
 		cur = cur[idx+1:]
 	}
 
-	return nums, ops, nil
+	return nums, ops
 }
 
 func parseValue(structValue reflect.Value, v string) (int64, error) {
@@ -150,10 +148,7 @@ func parseValue(structValue reflect.Value, v string) (int64, error) {
 	// calculate
 	mathIndex := strings.IndexAny(v, "+-")
 	if mathIndex != -1 {
-		nums, ops, err := parseCalc(v)
-		if err != nil {
-			return 0, err
-		}
+		nums, ops := parseCalc(v)
 
 		var result int64
 		for k := range nums {
