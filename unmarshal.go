@@ -51,13 +51,13 @@ func (u *unmarshal) Unmarshal(v interface{}) error {
 
 		fieldData, err := parseReadDataFromTags(structValue, tags)
 		if err != nil {
-			return errors.Wrapf(err, "failed parseReadDataFromTags: %s", fieldType.Name)
+			return errors.Wrapf(err, `failed parse ReadData from tags for field "%s"`, fieldType.Name)
 		}
 
 		fieldValue := structValue.Field(i)
 		err = u.setValueToField(structValue, fieldValue, fieldData)
 		if err != nil {
-			return errors.Wrapf(err, "failed setValueToField: %s", fieldType.Name)
+			return errors.Wrapf(err, `failed set value to field "%s"`, fieldType.Name)
 		}
 	}
 
@@ -75,13 +75,13 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 
 	err := setOffset(u.r, fieldData)
 	if err != nil {
-		return errors.Wrap(err, "failed setOffset")
+		return errors.Wrap(err, "set offset")
 	}
 
 	if fieldData.FuncName != "" {
 		okCallFunc, err := callFunc(u.r, fieldData.FuncName, structValue, fieldValue)
 		if err != nil {
-			return errors.Wrap(err, "failed callFunc")
+			return errors.Wrap(err, "call custom func")
 		}
 		if okCallFunc {
 			return nil
@@ -246,12 +246,22 @@ func callFunc(r ReadSeekPeeker, funcName string, structValue, fieldValue reflect
 
 		// Method(r binstruct.ReadSeekPeeker) error
 		if len(ret) == 1 && ret[0].Type() == errorType {
+			if !ret[0].IsNil() {
+				return true, ret[0].Interface().(error)
+			}
+
 			return true, nil
 		}
 
 		// Method(r binstruct.ReadSeekPeeker) (FieldType, error)
 		if len(ret) == 2 && ret[0].Type() == fieldValue.Type() && ret[1].Type() == errorType {
-			fieldValue.Set(ret[0])
+			if !ret[1].IsNil() {
+				return true, ret[1].Interface().(error)
+			}
+
+			if fieldValue.CanSet() {
+				fieldValue.Set(ret[0])
+			}
 			return true, nil
 		}
 	}
@@ -274,7 +284,7 @@ func setOffset(r ReadSeekPeeker, fieldData *fieldReadData) error {
 	for _, v := range fieldData.Offsets {
 		_, err := r.Seek(v.Offset, v.Whence)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "seek")
 		}
 	}
 
