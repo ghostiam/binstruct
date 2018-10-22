@@ -1,0 +1,159 @@
+(main.ZIP) {
+ _: (uint8) 0,
+ LocalFileSections: ([]main.ZIPLocalFileSection) (len=3 cap=4) {
+  (main.ZIPLocalFileSection) {
+   LocalFileHeader: (main.LocalFileHeader) {
+    Version: (uint16) 20,
+    Flags: ([2]uint8) (len=2 cap=2) {
+     00000000  02 00                                             |..|
+    },
+    CompressionMethod: (uint16) 0,
+    FileModTime: (uint16) 23810,
+    FileModDate: (uint16) 18782,
+    Crc32: ([4]uint8) (len=4 cap=4) {
+     00000000  00 00 00 00                                       |....|
+    },
+    CompressedSize: (uint32) 0,
+    UncompressedSize: (uint32) 0,
+    FileNameLen: (uint16) 7,
+    ExtraLen: (uint16) 0,
+    FileName: (string) (len=7) "folder/",
+    Extra: ([]uint8) <nil>
+   },
+   Body: ([]uint8) <nil>
+  },
+  (main.ZIPLocalFileSection) {
+   LocalFileHeader: (main.LocalFileHeader) {
+    Version: (uint16) 20,
+    Flags: ([2]uint8) (len=2 cap=2) {
+     00000000  02 00                                             |..|
+    },
+    CompressionMethod: (uint16) 8,
+    FileModTime: (uint16) 23804,
+    FileModDate: (uint16) 18782,
+    Crc32: ([4]uint8) (len=4 cap=4) {
+     00000000  ae 0a d3 d0                                       |....|
+    },
+    CompressedSize: (uint32) 14,
+    UncompressedSize: (uint32) 12,
+    FileNameLen: (uint16) 23,
+    ExtraLen: (uint16) 0,
+    FileName: (string) (len=23) "folder/fileInFolder.txt",
+    Extra: ([]uint8) <nil>
+   },
+   Body: ([]uint8) (len=14 cap=16) {
+    00000000  4b cb cc 49 55 48 ce cf  2b 49 cd 2b 01 00        |K..IUH..+I.+..|
+   }
+  },
+  (main.ZIPLocalFileSection) {
+   LocalFileHeader: (main.LocalFileHeader) {
+    Version: (uint16) 20,
+    Flags: ([2]uint8) (len=2 cap=2) {
+     00000000  02 00                                             |..|
+    },
+    CompressionMethod: (uint16) 8,
+    FileModTime: (uint16) 23804,
+    FileModDate: (uint16) 18782,
+    Crc32: ([4]uint8) (len=4 cap=4) {
+     00000000  ae 0a d3 d0                                       |....|
+    },
+    CompressedSize: (uint32) 14,
+    UncompressedSize: (uint32) 12,
+    FileNameLen: (uint16) 8,
+    ExtraLen: (uint16) 0,
+    FileName: (string) (len=8) "file.txt",
+    Extra: ([]uint8) <nil>
+   },
+   Body: ([]uint8) (len=14 cap=16) {
+    00000000  4b cb cc 49 55 48 ce cf  2b 49 cd 2b 01 00        |K..IUH..+I.+..|
+   }
+  }
+ },
+ CentralDirEntrySections: ([]main.ZIPCentralDirEntrySection) (len=3 cap=4) {
+  (main.ZIPCentralDirEntrySection) {
+   VersionMadeBy: (int16) 20,
+   VersionNeededToExtract: (int16) 20,
+   Flags: ([2]uint8) (len=2 cap=2) {
+    00000000  02 00                                             |..|
+   },
+   CompressionMethod: (int16) 0,
+   LastModFileTime: (int16) 23810,
+   LastModFileDate: (int16) 18782,
+   Crc32: ([4]uint8) (len=4 cap=4) {
+    00000000  00 00 00 00                                       |....|
+   },
+   CompressedSize: (int32) 0,
+   UncompressedSize: (int32) 0,
+   FileNameLen: (int16) 7,
+   ExtraLen: (int16) 0,
+   CommentLen: (int16) 0,
+   DiskNumberStart: (int16) 0,
+   IntFileAttr: (int16) 0,
+   ExtFileAttr: (int32) 16,
+   LocalHeaderOffset: (int32) 0,
+   FileName: (string) (len=7) "folder/",
+   Extra: ([]uint8) <nil>,
+   Comment: (string) ""
+  },
+  (main.ZIPCentralDirEntrySection) {
+   VersionMadeBy: (int16) 20,
+   VersionNeededToExtract: (int16) 20,
+   Flags: ([2]uint8) (len=2 cap=2) {
+    00000000  02 00                                             |..|
+   },
+   CompressionMethod: (int16) 8,
+   LastModFileTime: (int16) 23804,
+   LastModFileDate: (int16) 18782,
+   Crc32: ([4]uint8) (len=4 cap=4) {
+    00000000  ae 0a d3 d0                                       |....|
+   },
+   CompressedSize: (int32) 14,
+   UncompressedSize: (int32) 12,
+   FileNameLen: (int16) 23,
+   ExtraLen: (int16) 0,
+   CommentLen: (int16) 0,
+   DiskNumberStart: (int16) 0,
+   IntFileAttr: (int16) 1,
+   ExtFileAttr: (int32) 32,
+   LocalHeaderOffset: (int32) 37,
+   FileName: (string) (len=23) "folder/fileInFolder.txt",
+   Extra: ([]uint8) <nil>,
+   Comment: (string) ""
+  },
+  (main.ZIPCentralDirEntrySection) {
+   VersionMadeBy: (int16) 20,
+   VersionNeededToExtract: (int16) 20,
+   Flags: ([2]uint8) (len=2 cap=2) {
+    00000000  02 00                                             |..|
+   },
+   CompressionMethod: (int16) 8,
+   LastModFileTime: (int16) 23804,
+   LastModFileDate: (int16) 18782,
+   Crc32: ([4]uint8) (len=4 cap=4) {
+    00000000  ae 0a d3 d0                                       |....|
+   },
+   CompressedSize: (int32) 14,
+   UncompressedSize: (int32) 12,
+   FileNameLen: (int16) 8,
+   ExtraLen: (int16) 0,
+   CommentLen: (int16) 0,
+   DiskNumberStart: (int16) 0,
+   IntFileAttr: (int16) 1,
+   ExtFileAttr: (int32) 32,
+   LocalHeaderOffset: (int32) 104,
+   FileName: (string) (len=8) "file.txt",
+   Extra: ([]uint8) <nil>,
+   Comment: (string) ""
+  }
+ },
+ EndOfCentralDirSection: (main.ZIPEndOfCentralDirSection) {
+  DiskOfEndOfCentralDir: (int16) 0,
+  DiskOfCentralDir: (int16) 0,
+  QtyCentralDirEntriesOnDisk: (int16) 3,
+  QtyCentralDirEntriesTotal: (int16) 3,
+  CentralDirSize: (int32) 176,
+  CentralDirOffset: (int32) 156,
+  CommentLen: (int16) 0,
+  Comment: (string) ""
+ }
+}
