@@ -123,23 +123,78 @@ type fieldReadData struct {
 	ElemFieldData *fieldReadData // if type Element
 }
 
-func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadData, error) {
-	parseValue := func(v string) (int64, error) {
-		l, err := strconv.ParseInt(v, 10, 0)
-		if err != nil {
-			lenVal := structValue.FieldByName(v)
-			switch lenVal.Kind() {
-			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				l = lenVal.Int()
-			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-				l = int64(lenVal.Uint())
-			default:
-				return 0, errors.New("can't get field len from " + v + " field")
-			}
+func parseCalc(v string) (nums []string, ops []string, err error) {
+	cur := v
+	for {
+		idx := strings.IndexAny(cur, "+-")
+		if idx == -1 {
+			nums = append(nums, cur)
+			break
 		}
-		return l, nil
+
+		nums = append(nums, cur[:idx])
+		ops = append(ops, string(cur[idx]))
+
+		cur = cur[idx+1:]
 	}
 
+	return nums, ops, nil
+}
+
+func parseValue(structValue reflect.Value, v string) (int64, error) {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return 0, nil
+	}
+
+	// calculate
+	mathIndex := strings.IndexAny(v, "+-")
+	if mathIndex != -1 {
+		nums, ops, err := parseCalc(v)
+		if err != nil {
+			return 0, err
+		}
+
+		var result int64
+		for k := range nums {
+			n, err := parseValue(structValue, nums[k])
+			if err != nil {
+				return 0, err
+			}
+
+			if k == 0 {
+				result = n
+				continue
+			}
+
+			switch ops[k-1] {
+			case "+":
+				result += n
+			case "-":
+				result -= n
+			}
+		}
+
+		return result, nil
+	}
+
+	// parse value or get from field
+	l, err := strconv.ParseInt(v, 10, 0)
+	if err != nil {
+		lenVal := structValue.FieldByName(v)
+		switch lenVal.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			l = lenVal.Int()
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			l = int64(lenVal.Uint())
+		default:
+			return 0, errors.New("can't get field len from " + v + " field")
+		}
+	}
+	return l, nil
+}
+
+func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadData, error) {
 	var data fieldReadData
 	var err error
 	for _, t := range tags {
@@ -149,12 +204,12 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 
 		case tagTypeLength:
 			var length int64
-			length, err = parseValue(t.Value)
+			length, err = parseValue(structValue, t.Value)
 			data.Length = &length
 
 		case tagTypeOffsetFromCurrent:
 			var offset int64
-			offset, err = parseValue(t.Value)
+			offset, err = parseValue(structValue, t.Value)
 			data.Offsets = append(data.Offsets, fieldOffset{
 				Offset: offset,
 				Whence: io.SeekCurrent,
@@ -162,7 +217,7 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 
 		case tagTypeOffsetFromStart:
 			var offset int64
-			offset, err = parseValue(t.Value)
+			offset, err = parseValue(structValue, t.Value)
 			data.Offsets = append(data.Offsets, fieldOffset{
 				Offset: offset,
 				Whence: io.SeekStart,
@@ -170,7 +225,7 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 
 		case tagTypeOffsetFromEnd:
 			var offset int64
-			offset, err = parseValue(t.Value)
+			offset, err = parseValue(structValue, t.Value)
 			data.Offsets = append(data.Offsets, fieldOffset{
 				Offset: offset,
 				Whence: io.SeekEnd,
