@@ -239,13 +239,13 @@ func callFunc(r Reader, funcName string, structValue, fieldValue reflect.Value) 
 	// Call methods
 	m := structValue.Addr().MethodByName(funcName)
 
-	readSeekPeekerType := reflect.TypeOf((*Reader)(nil)).Elem()
-	if m.IsValid() && m.Type().NumIn() == 1 && m.Type().In(0) == readSeekPeekerType {
+	readerType := reflect.TypeOf((*Reader)(nil)).Elem()
+	if m.IsValid() && m.Type().NumIn() == 1 && m.Type().In(0) == readerType {
 		ret := m.Call([]reflect.Value{reflect.ValueOf(r)})
 
 		errorType := reflect.TypeOf((*error)(nil)).Elem()
 
-		// Method(r binstruct.ReadSeekPeeker) error
+		// Method(r binstruct.Reader) error
 		if len(ret) == 1 && ret[0].Type() == errorType {
 			if !ret[0].IsNil() {
 				return true, ret[0].Interface().(error)
@@ -254,7 +254,7 @@ func callFunc(r Reader, funcName string, structValue, fieldValue reflect.Value) 
 			return true, nil
 		}
 
-		// Method(r binstruct.ReadSeekPeeker) (FieldType, error)
+		// Method(r binstruct.Reader) (FieldType, error)
 		if len(ret) == 2 && ret[0].Type() == fieldValue.Type() && ret[1].Type() == errorType {
 			if !ret[1].IsNil() {
 				return true, ret[1].Interface().(error)
@@ -269,9 +269,9 @@ func callFunc(r Reader, funcName string, structValue, fieldValue reflect.Value) 
 
 	message := `
 failed call method, expected methods:
-	func (*{{Struct}}) {{MethodName}}(r binstruct.ReadSeekPeeker) error {} 
+	func (*{{Struct}}) {{MethodName}}(r binstruct.Reader) error {} 
 or
-	func (*{{Struct}}) {{MethodName}}(r binstruct.ReadSeekPeeker) ({{FieldType}}, error) {}
+	func (*{{Struct}}) {{MethodName}}(r binstruct.Reader) ({{FieldType}}, error) {}
 `
 	message = strings.NewReplacer(
 		`{{Struct}}`, structValue.Type().Name(),

@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
+
+	"github.com/pkg/errors"
 )
 
 type dataWithNullTerminatedString struct {
@@ -17,6 +20,9 @@ func (*dataWithNullTerminatedString) NullTerminatedString(r Reader) (string, err
 
 	for {
 		readByte, err := r.ReadByte()
+		if errors.Cause(err) == io.EOF {
+			break
+		}
 		if err != nil {
 			return "", err
 		}
