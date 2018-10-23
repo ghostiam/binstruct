@@ -415,7 +415,7 @@ type dataCustomMethod1Struct struct {
 	Custom map[string]string `bin:"CustomMap"`
 }
 
-func (d *dataCustomMethod1Struct) CustomMap(r ReadSeekPeeker) error {
+func (d *dataCustomMethod1Struct) CustomMap(r Reader) error {
 	m := make(map[string]string)
 
 	lenMap, err := r.ReadInt8()
@@ -458,7 +458,7 @@ type dataCustomMethod2Struct struct {
 	Custom [2]map[string]string `bin:"len:2,[CustomMap]"`
 }
 
-func (*dataCustomMethod2Struct) CustomMap(r ReadSeekPeeker) (map[string]string, error) {
+func (*dataCustomMethod2Struct) CustomMap(r Reader) (map[string]string, error) {
 	m := make(map[string]string)
 
 	lenMap, err := r.ReadInt8()

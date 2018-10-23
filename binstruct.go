@@ -19,14 +19,14 @@ func Unmarshal(data []byte, order binary.ByteOrder, v interface{}) error {
 }
 
 type Decoder struct {
-	rs    io.ReadSeeker
+	r     io.ReadSeeker
 	order binary.ByteOrder
 	debug bool
 }
 
-func NewDecoder(rs io.ReadSeeker, order binary.ByteOrder) *Decoder {
+func NewDecoder(r io.ReadSeeker, order binary.ByteOrder) *Decoder {
 	return &Decoder{
-		rs:    rs,
+		r:     r,
 		order: order,
 		debug: false,
 	}
@@ -37,9 +37,5 @@ func (dec *Decoder) SetDebug(debug bool) {
 }
 
 func (dec *Decoder) Decode(v interface{}) error {
-	u := unmarshal{
-		r: NewReader(dec.rs, dec.order, dec.debug),
-	}
-
-	return u.Unmarshal(v)
+	return NewReader(dec.r, dec.order, dec.debug).Unmarshal(v)
 }

@@ -38,7 +38,7 @@ type ZIP struct {
 	EndOfCentralDirSection  ZIPEndOfCentralDirSection   `bin:"-"`
 }
 
-func (zip *ZIP) ParseZIPSections(r binstruct.ReadSeekPeeker) error {
+func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 	for {
 		// Find magic PK (0x50 0x4B)
 		var magicPrevByte byte
@@ -75,6 +75,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.ReadSeekPeeker) error {
 			}
 
 			zip.LocalFileSections = append(zip.LocalFileSections, localFileSection)
+
 		case bytes.Equal(sectionType, []byte{0x01, 0x02}):
 			// parse CentralDirEntry
 			var centralDirEntrySections ZIPCentralDirEntrySection
@@ -94,6 +95,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.ReadSeekPeeker) error {
 			}
 
 			zip.EndOfCentralDirSection = endOfCentralDirSections
+
 		default:
 			log.Errorf("unknown section type: %#x", sectionType)
 		}

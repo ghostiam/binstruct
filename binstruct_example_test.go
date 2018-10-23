@@ -12,7 +12,7 @@ type dataWithNullTerminatedString struct {
 	OtherID int32
 }
 
-func (*dataWithNullTerminatedString) NullTerminatedString(r ReadSeekPeeker) (string, error) {
+func (*dataWithNullTerminatedString) NullTerminatedString(r Reader) (string, error) {
 	var b []byte
 
 	for {

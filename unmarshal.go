@@ -14,7 +14,7 @@ BinaryUnmarshaler /usr/local/opt/go/libexec/src/encoding/encoding.go:28
 */
 
 type unmarshal struct {
-	r ReadSeekPeeker
+	r Reader
 }
 
 type Unmarshaler interface {
@@ -235,11 +235,11 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 
 	return nil
 }
-func callFunc(r ReadSeekPeeker, funcName string, structValue, fieldValue reflect.Value) (bool, error) {
+func callFunc(r Reader, funcName string, structValue, fieldValue reflect.Value) (bool, error) {
 	// Call methods
 	m := structValue.Addr().MethodByName(funcName)
 
-	readSeekPeekerType := reflect.TypeOf((*ReadSeekPeeker)(nil)).Elem()
+	readSeekPeekerType := reflect.TypeOf((*Reader)(nil)).Elem()
 	if m.IsValid() && m.Type().NumIn() == 1 && m.Type().In(0) == readSeekPeekerType {
 		ret := m.Call([]reflect.Value{reflect.ValueOf(r)})
 
@@ -281,7 +281,7 @@ or
 	return false, errors.New(message)
 }
 
-func setOffset(r Seeker, fieldData *fieldReadData) error {
+func setOffset(r Reader, fieldData *fieldReadData) error {
 	for _, v := range fieldData.Offsets {
 		_, err := r.Seek(v.Offset, v.Whence)
 		if err != nil {
