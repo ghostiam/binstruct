@@ -1,8 +1,6 @@
 # binstruct
 Golang binary decoder to structure
 
-**Warning: This project is under development, backward compatibility is not guaranteed.**
-
 # Examples
 
 [ZIP decoder](examples/zip) \
@@ -12,7 +10,7 @@ Golang binary decoder to structure
 
 ## For struct
 
-### From file:
+### From file or other io.ReadSeeker:
 ```go
 file, err := os.Open("sample.png")
 if err != nil {
@@ -85,37 +83,90 @@ type Reader interface {
 }
 ```
 
-# Struct tags
+# Decode to fields
 
 ```go
 type test struct {
-	IgnoredField []byte `bin:"-"` // ignore field
+	// Read 1 byte
+	Field bool
+	Field byte
+	Field [1]byte
+	Field int8
+	Field uint8
+
+	// Read 2 bytes
+	Field int16
+	Field uint16
+	Field [2]byte
+
+	// Read 4 bytes
+	Field int32
+	Field uint32
+	Field [4]byte
+
+	// Read 8 bytes
+	Field int64
+	Field uint64
+	Field [8]byte
+
+	// You can override length
+	Field int64 `bin:"len:2"`
+
+	// Fields of type int, uint and string are not read automatically 
+	// because the size is not known, you need to set it manually
+	Field int    `bin:"len:2"`
+	Field uint   `bin:"len:4"`
+	Field string `bin:"len:42"`
+	
+	// Can read arrays and slices
+	Array [2]int32              // read 8 bytes (4+4byte for 2 int32)
+	Slice []int32 `bin:"len:2"` // read 8 bytes (4+4byte for 2 int32)
+	
+	// Also two-dimensional slices work (binstruct_test.go:209 Test_SliceOfSlice)
+	Slice2D [][]int32 `bin:"len:2,[len:2]"`
+	// and even three-dimensional slices (binstruct_test.go:231 Test_SliceOfSliceOfSlice)
+	Slice3D [][][]int32 `bin:"len:2,[len:2,[len:2]]"`
+	
+	// Structures and embedding are also supported.
+	Struct struct {
+		...
+	}
+	OtherStruct Other
+	Other // embedding
+}
+
+type Other struct {
+	...
+}
+```
+
+# Tags
+
+```go
+type test struct {
+	IgnoredField []byte `bin:"-"`          // ignore field
 	CallMethod   []byte `bin:"MethodName"` // Call method "MethodName"
-	ReadLength   []byte `bin:"len:42"` // read 42 bytes
+	ReadLength   []byte `bin:"len:42"`     // read 42 bytes
 	
 	// Offsets test binstruct_test.go:9
-	Offset      []byte `bin:"offset:42"` // move to 42 bytes from current position
-	OffsetStart []byte `bin:"offsetStart:42"` // move to 42 bytes from start position
-	OffsetEnd   []byte `bin:"offsetEnd:-42"` // move to -42 bytes from end position
-	OffsetStart []byte `bin:"offsetStart:42, offset:10"` // also worked and equally `offsetStart:52`
+	Offset      byte `bin:"offset:42"`      // move to 42 bytes from current position and read byte
+	OffsetStart byte `bin:"offsetStart:42"` // move to 42 bytes from start position and read byte
+	OffsetEnd   byte `bin:"offsetEnd:-42"`  // move to -42 bytes from end position and read byte
+	OffsetStart byte `bin:"offsetStart:42, offset:10"` // also worked and equally `offsetStart:52`
 
-	CalcTagValue []byte `bin:"len:10+5+2+3"` // equally len:20, supported +,-,/,* (calculations are performed from left to right that is 2+2*2=8 not 6!!!)
+	// Calculations supported +,-,/,* and are performed from left to right that is 2+2*2=8 not 6!!!
+	CalcTagValue []byte `bin:"len:10+5+2+3"` // equally len:20
 	
 	// You can refer to another field to get the value.
-	DataLength              int // actual value
-	ValueFromOtherField     int // `bin:"len:DataLength"`
-	// also work calculations
-	CalcValueFromOtherField int // `bin:"len:DataLength+10"`
+	DataLength              int    // actual length
+	ValueFromOtherField     string `bin:"len:DataLength"`
+	CalcValueFromOtherField string `bin:"len:DataLength+10"` // also work calculations
 } 
 
 // Method can be:
-func (*test) MethodName(r Reader) (FieldType, error) {
-    ...
-}
+func (*test) MethodName(r binstruct.Reader) (error) {}
 // or
-func (*test) MethodName(r Reader) (error) {
-    ...
-}
+func (*test) MethodName(r binstruct.Reader) (FieldType, error) {}
 ```
 
 See the tests and sample files for more information.
