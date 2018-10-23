@@ -4,18 +4,18 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"log"
 	"os"
 
 	"github.com/GhostRussia/binstruct"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
-	"github.com/prometheus/common/log"
 )
 
 // https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
 
 func main() {
-	file, err := os.Open("sample1.zip")
+	file, err := os.Open("sample.zip")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,14 +25,14 @@ func main() {
 	// decoder.SetDebug(true)
 	err = decoder.Decode(&zip)
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 
 	spew.Dump(zip)
 }
 
 type ZIP struct {
-	_                       byte                        `bin:"ParseZIPSections"` // Helper for scan
+	_                       byte                        `bin:"ParseZIPSections"` // Call helper method for scan
 	LocalFileSections       []ZIPLocalFileSection       `bin:"-"`
 	CentralDirEntrySections []ZIPCentralDirEntrySection `bin:"-"`
 	EndOfCentralDirSection  ZIPEndOfCentralDirSection   `bin:"-"`
@@ -97,7 +97,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 			zip.EndOfCentralDirSection = endOfCentralDirSections
 
 		default:
-			log.Errorf("unknown section type: %#x", sectionType)
+			log.Printf("unknown section type: %#x", sectionType)
 		}
 	}
 	return nil
