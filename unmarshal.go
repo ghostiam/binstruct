@@ -227,10 +227,10 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 	case reflect.Struct:
 		err := u.Unmarshal(fieldValue.Addr().Interface())
 		if err != nil {
-			panic(err)
+			return errors.Wrap(err, "unmarshal struct")
 		}
 	default:
-		panic("KIND not supported: " + fieldValue.Kind().String())
+		return errors.New("KIND not supported: " + fieldValue.Kind().String())
 	}
 
 	return nil
