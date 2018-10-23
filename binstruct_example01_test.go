@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 )
 
@@ -55,7 +56,12 @@ func Example_decoderDataWithNullTerminatedString() {
 		panic(err)
 	}
 
-	fmt.Printf("%#v", actual)
+	fmt.Print(spew.Sdump(actual))
 
-	// Output: binstruct.dataWithNullTerminatedString{ID:5, Type:"test", OtherID:-16}
+	// Output:
+	// (binstruct.dataWithNullTerminatedString) {
+	//  ID: (int32) 5,
+	//  Type: (string) (len=4) "test",
+	//  OtherID: (int32) -16
+	// }
 }

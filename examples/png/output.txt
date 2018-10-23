@@ -1,0 +1,126 @@
+(main.PNG) {
+ Header: ([8]uint8) (len=8 cap=8) {
+  00000000  89 50 4e 47 0d 0a 1a 0a                           |.PNG....|
+ },
+ IHDR: (main.IHDR) {
+  Len: (int32) 13,
+  Type: (string) (len=4) "IHDR",
+  Data: (main.IHDRData) {
+   Width: (int32) 200,
+   Height: (int32) 113,
+   BitDepth: (int8) 8,
+   ColorType: (main.PNGColorType) Truecolor with alpha,
+   CompressionMethod: (int8) 0,
+   FilterMethod: (int8) 0,
+   InterlaceMethod: (int8) 0
+  },
+  CRC: ([4]uint8) (len=4 cap=4) {
+   00000000  90 9d ec 23                                       |...#|
+  }
+ },
+ Chunks: ([]main.Chunk) (len=9 cap=16) {
+  (main.Chunk) {
+   Len: (int32) 4,
+   Type: (string) (len=4) "gAMA",
+   Data: (main.GammaData) 45455,
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  0b fc 61 05                                       |..a.|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 32,
+   Type: (string) (len=4) "cHRM",
+   Data: (main.ChromaticData) {
+    White: (main.Point) {
+     X: (int32) 31270,
+     Y: (int32) 32900
+    },
+    Red: (main.Point) {
+     X: (int32) 64000,
+     Y: (int32) 33000
+    },
+    Green: (main.Point) {
+     X: (int32) 30000,
+     Y: (int32) 60000
+    },
+    Blue: (main.Point) {
+     X: (int32) 15000,
+     Y: (int32) 6000
+    }
+   },
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  9c ba 51 3c                                       |..Q<|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 9,
+   Type: (string) (len=4) "pHYs",
+   Data: (main.PhysicalPixelData) {
+    Point: (main.Point) {
+     X: (int32) 2835,
+     Y: (int32) 2835
+    },
+    Unit: (int8) 1
+   },
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  00 9a 9c 18                                       |....|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 345,
+   Type: (string) (len=4) "iTXt",
+   Data: (main.InternationalTextData) {
+    DataLen: (int32) 325,
+    Keyword: (string) (len=17) "XML:com.adobe.xmp",
+    CompressionFlag: (uint8) 0,
+    CompressionMethod: (uint8) 0,
+    LanguageTag: (string) "",
+    TranslatedKeyword: (string) "",
+    Text: (string) (len=323) "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"XMP Core 5.4.0\">\n   <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n      <rdf:Description rdf:about=\"\"\n            xmlns:tiff=\"http://ns.adobe.com/tiff/1.0/\">\n         <tiff:Orientation>1</tiff:Orientation>\n      </rdf:Description>\n   </rdf:RDF>\n</x:xmpmeta>\n"
+   },
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  4c c2 27 59                                       |L.'Y|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 16384,
+   Type: (string) (len=4) "IDAT",
+   Data: (main.RawData) (len=16384 cap=16384) <skip>,
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  c9 89 11 a9                                       |....|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 16384,
+   Type: (string) (len=4) "IDAT",
+   Data: (main.RawData) (len=16384 cap=16384) <skip>,
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  85 c4 fc 69                                       |...i|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 16384,
+   Type: (string) (len=4) "IDAT",
+   Data: (main.RawData) (len=16384 cap=16384) <skip>,
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  44 f8 1a 2d                                       |D..-|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 3231,
+   Type: (string) (len=4) "IDAT",
+   Data: (main.RawData) (len=3231 cap=3231) <skip>,
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  9a e3 7f e0                                       |....|
+   }
+  },
+  (main.Chunk) {
+   Len: (int32) 0,
+   Type: (string) (len=4) "IEND",
+   Data: (main.RawData) <skip>,
+   CRC: ([4]uint8) (len=4 cap=4) {
+    00000000  ae 42 60 82                                       |.B`.|
+   }
+  }
+ }
+}

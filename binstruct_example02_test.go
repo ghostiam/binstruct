@@ -1,14 +1,12 @@
-// +build test
-
 package binstruct
 
 import (
 	"bytes"
 	"encoding/binary"
-	"testing"
+	"fmt"
+	"log"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/stretchr/testify/require"
 )
 
 type custom struct {
@@ -18,6 +16,7 @@ type custom struct {
 	Type    string `bin:"len:TypeLen"`
 	B       []byte `bin:"len:3"`
 }
+
 type data struct {
 	StrLen int    `bin:"len:2,offset:1"`
 	Str    string `bin:"len:StrLen"`
@@ -30,12 +29,10 @@ type data struct {
 
 	Skip []byte `bin:"-"`
 
-	Custom custom `bin:"Test"`
+	Custom custom
 }
 
-func (d *data) Test() {}
-
-func (d *data) StringFunc(r ReadSeekPeeker) (string, error) {
+func (d *data) StringFunc(r Reader) (string, error) {
 	_, _, err := r.ReadBytes(1)
 	if err != nil {
 		return "", err
@@ -54,7 +51,7 @@ func (d *data) StringFunc(r ReadSeekPeeker) (string, error) {
 	return string(str), nil
 }
 
-func (d *data) MapFunc(r ReadSeekPeeker) error {
+func (d *data) MapFunc(r Reader) error {
 	s := make(map[int]string)
 
 	for i := 0; i < 2; i++ {
@@ -80,7 +77,7 @@ func (d *data) MapFunc(r ReadSeekPeeker) error {
 	return nil
 }
 
-func Test_Decoder(t *testing.T) {
+func Example_decodeCustom() {
 	var b = []byte{
 		's', 0x00, 0x05, 'h', 'e', 'l', 'l', 'o', // string
 		// Int
@@ -107,30 +104,48 @@ func Test_Decoder(t *testing.T) {
 		'h', 'i', '!', // bytes
 	}
 
-	var want = data{
-		StrLen: 5,
-		Str:    "hello",
-		Int:    10,
-		ArrLen: 2,
-		ISlice: []int{17, 34},
-		IArr:   [2]int32{51, 68},
-		SSlice: []string{"hi", "yay"},
-		Map:    map[int]string{0: "hi", 1: "yay"},
-		Custom: custom{
-			ID:      255,
-			TypeLen: 4,
-			Type:    "test",
-			B:       []byte{'h', 'i', '!'},
-		},
-	}
-
 	var actual data
 
 	decoder := NewDecoder(bytes.NewReader(b), binary.BigEndian)
 	err := decoder.Decode(&actual)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	require.Equal(t, want, actual, spew.Sdump(actual))
+	fmt.Print(spew.Sdump(actual))
+
+	// Output: (binstruct.data) {
+	//  StrLen: (int) 5,
+	//  Str: (string) (len=5) "hello",
+	//  Int: (int32) 10,
+	//  ArrLen: (uint16) 2,
+	//  ISlice: ([]int) (len=2 cap=2) {
+	//   (int) 17,
+	//   (int) 34
+	//  },
+	//  IArr: ([2]int32) (len=2 cap=2) {
+	//   (int32) 51,
+	//   (int32) 68
+	//  },
+	//  SSlice: ([]string) (len=2 cap=2) {
+	//   (string) (len=2) "hi",
+	//   (string) (len=3) "yay"
+	//  },
+	//  Map: (map[int]string) (len=2) {
+	//   (int) 0: (string) (len=2) "hi",
+	//   (int) 1: (string) (len=3) "yay"
+	//  },
+	//  Skip: ([]uint8) <nil>,
+	//  Custom: (binstruct.custom) {
+	//   ID: (int16) 255,
+	//   _: ([1]uint8) (len=1 cap=1) {
+	//    00000000  00                                                |.|
+	//   },
+	//   TypeLen: (int16) 4,
+	//   Type: (string) (len=4) "test",
+	//   B: ([]uint8) (len=3 cap=4) {
+	//    00000000  68 69 21                                          |hi!|
+	//   }
+	//  }
+	// }
 }
