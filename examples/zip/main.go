@@ -100,7 +100,6 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 			log.Printf("unknown section type: %#x", sectionType)
 		}
 	}
-	return nil
 }
 
 type ZIPLocalFileSection struct {

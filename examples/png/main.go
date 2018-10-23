@@ -49,48 +49,40 @@ func (png *PNG) ReadChunks(r binstruct.Reader) error {
 
 		png.Chunks = append(png.Chunks, c)
 	}
-	return nil
 }
 
 // https://www.w3.org/TR/PNG/#11IHDR
 type IHDR struct {
 	Len  int32
 	Type string `bin:"len:4"`
-	Data struct {
-		Width             int32
-		Height            int32
-		BitDepth          int8
-		ColorType         PNGColorType
-		CompressionMethod int8
-		FilterMethod      int8
-		InterlaceMethod   int8
-	}
-	CRC [4]byte
+	Data IHDRData
+	CRC  [4]byte
 }
 
-// PNGColorType is color type enum
+type IHDRData struct {
+	Width             int32
+	Height            int32
+	BitDepth          int8
+	ColorType         PNGColorType
+	CompressionMethod int8
+	FilterMethod      int8
+	InterlaceMethod   int8
+}
+
 type PNGColorType int8
 
 func (t PNGColorType) String() string {
 	colors := [...]string{
-		"Greyscale",
-		"Invalid",
-		"Truecolor",
-		"Indexed",
-		"Greyscale with alpha",
-		"Invalid",
-		"Truecolor with alpha",
+		"Greyscale",            // 0
+		"Invalid",              // 1
+		"Truecolor",            // 2
+		"Indexed",              // 3
+		"Greyscale with alpha", // 4
+		"Invalid",              // 5
+		"Truecolor with alpha", // 6
 	}
 	return colors[t]
 }
-
-const (
-	Greyscale      PNGColorType = 0
-	Truecolor      PNGColorType = 2
-	Indexed        PNGColorType = 3
-	GreyscaleAlpha PNGColorType = 4
-	TruecolorAlpha PNGColorType = 6
-)
 
 type Chunk struct {
 	Len  int32
@@ -132,7 +124,6 @@ func (c *Chunk) ReadChunkData(r binstruct.Reader) (interface{}, error) {
 		_, b, err := r.ReadBytes(int(c.Len))
 		return RawData(b), err
 	}
-	return nil, nil
 }
 
 type RawData []byte
@@ -184,7 +175,7 @@ type InternationalTextData struct {
 func (d *InternationalTextData) NullTerminatedString(r binstruct.Reader) (string, error) {
 	var b []byte
 
-	var readiedCount int32
+	var readCount int32
 	for {
 		readByte, err := r.ReadByte()
 		if errors.Cause(err) == io.EOF {
@@ -194,7 +185,7 @@ func (d *InternationalTextData) NullTerminatedString(r binstruct.Reader) (string
 			return "", err
 		}
 
-		readiedCount++
+		readCount++
 
 		if readByte == 0x00 {
 			break
@@ -203,7 +194,7 @@ func (d *InternationalTextData) NullTerminatedString(r binstruct.Reader) (string
 		b = append(b, readByte)
 	}
 
-	d.DataLen -= readiedCount
+	d.DataLen -= readCount
 
 	return string(b), nil
 }
