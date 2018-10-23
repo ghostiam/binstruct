@@ -11,11 +11,6 @@ import (
 
 const (
 	tagName = "bin"
-	/*
-		len:10,offset:20,skip:5
-		len:Len,offset:Offset,skip:Skip
-		func // func from struct method or FuncMap
-	*/
 )
 
 const (
