@@ -7,12 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-/*
-TODO:
-UnmarshalTypeError /usr/local/opt/go/libexec/src/encoding/json/decode.go:124
-BinaryUnmarshaler /usr/local/opt/go/libexec/src/encoding/encoding.go:28
-*/
-
 type unmarshal struct {
 	r Reader
 }
