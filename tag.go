@@ -124,7 +124,7 @@ type fieldReadData struct {
 func parseCalc(v string) (nums, ops []string) {
 	cur := v
 	for {
-		idx := strings.IndexAny(cur, "+-")
+		idx := strings.IndexAny(cur, "+-/*")
 		if idx == -1 {
 			nums = append(nums, cur)
 			break
@@ -146,7 +146,7 @@ func parseValue(structValue reflect.Value, v string) (int64, error) {
 	}
 
 	// calculate
-	mathIndex := strings.IndexAny(v, "+-")
+	mathIndex := strings.IndexAny(v, "+-/*")
 	if mathIndex != -1 {
 		nums, ops := parseCalc(v)
 
@@ -167,6 +167,10 @@ func parseValue(structValue reflect.Value, v string) (int64, error) {
 				result += n
 			case "-":
 				result -= n
+			case "/":
+				result /= n
+			case "*":
+				result *= n
 			}
 		}
 

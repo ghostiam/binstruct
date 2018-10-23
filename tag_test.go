@@ -146,6 +146,36 @@ func Test_parseReadDataFromTags(t *testing.T) {
 			},
 		},
 		{
+			name: "calc len 5*2",
+			args: args{
+				structValue: reflect.ValueOf(struct{}{}),
+				tags: []tag{
+					{
+						Type:  "len",
+						Value: "5*2",
+					},
+				},
+			},
+			want: &fieldReadData{
+				Length: ptrInt(10),
+			},
+		},
+		{
+			name: "calc len 10/2",
+			args: args{
+				structValue: reflect.ValueOf(struct{}{}),
+				tags: []tag{
+					{
+						Type:  "len",
+						Value: "10/2",
+					},
+				},
+			},
+			want: &fieldReadData{
+				Length: ptrInt(5),
+			},
+		},
+		{
 			name: "calc len 5+FieldValue",
 			args: args{
 				structValue: reflect.ValueOf(struct {
@@ -184,7 +214,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 			},
 		},
 		{
-			name: "calc len many 5+FieldValue+10-5-FieldSub",
+			name: "calc len many 10 + FieldAdd + 10 - 5 - FieldSub / 2",
 			args: args{
 				structValue: reflect.ValueOf(struct {
 					FieldAdd int
@@ -196,12 +226,12 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				tags: []tag{
 					{
 						Type:  "len",
-						Value: "10 + FieldAdd + 10 - 5 - FieldSub",
+						Value: "10 + FieldAdd + 10 - 5 - FieldSub / 2",
 					},
 				},
 			},
 			want: &fieldReadData{
-				Length: ptrInt(10),
+				Length: ptrInt(5),
 			},
 		},
 		{
