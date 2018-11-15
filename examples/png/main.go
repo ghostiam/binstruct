@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/GhostRussia/binstruct"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/ghostiam/binstruct"
 	"github.com/pkg/errors"
 )
 
