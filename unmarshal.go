@@ -229,6 +229,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 
 	return nil
 }
+
 func callFunc(r Reader, funcName string, structValue, fieldValue reflect.Value) (bool, error) {
 	// Call methods
 	m := structValue.Addr().MethodByName(funcName)
