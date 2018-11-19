@@ -112,7 +112,9 @@ func Example_decodeCustom() {
 		log.Fatal(err)
 	}
 
-	fmt.Print(spew.Sdump(actual))
+	spewCfg := spew.NewDefaultConfig()
+	spewCfg.SortKeys = true
+	fmt.Print(spewCfg.Sdump(actual))
 
 	// Output: (binstruct.data) {
 	//  StrLen: (int) 5,
