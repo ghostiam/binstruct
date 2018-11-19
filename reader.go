@@ -1,6 +1,7 @@
 package binstruct
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -48,6 +49,10 @@ func NewReader(r io.ReadSeeker, order binary.ByteOrder, debug bool) Reader {
 		order: order,
 		debug: debug,
 	}
+}
+
+func NewReaderFromBytes(data []byte, order binary.ByteOrder, debug bool) Reader {
+	return NewReader(bytes.NewReader(data), order, debug)
 }
 
 type reader struct {
