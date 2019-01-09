@@ -110,6 +110,12 @@ func Example_readmeReader() {
 	}
 	fmt.Println(i32)
 
+	b, err := reader.Peek(4)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Peek bytes: %#v\n", b)
+
 	an, b, err := reader.ReadBytes(4)
 	if err != nil {
 		log.Fatal(err)
@@ -125,6 +131,7 @@ func Example_readmeReader() {
 	// Output:
 	// 258
 	// 50595078
+	// Peek bytes: []byte{0x7, 0x8, 0x9, 0xa}
 	// Read 4 bytes: []byte{0x7, 0x8, 0x9, 0xa}
 	// Read all: []byte{0xb, 0xc, 0xd, 0xe, 0xf}
 }
