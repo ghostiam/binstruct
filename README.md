@@ -255,7 +255,7 @@ func (*test) MethodName(r binstruct.Reader) (error) {}
 func (*test) MethodName(r binstruct.Reader) (FieldType, error) {}
 ```
 
-See the tests and sample files for more information.
+See the tests and examples for more information.
 
 # License
 
