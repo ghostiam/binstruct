@@ -1,4 +1,4 @@
-package binstruct
+package binstruct_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/ghostiam/binstruct"
 )
 
 type custom struct {
@@ -32,7 +33,7 @@ type data struct {
 	Custom custom
 }
 
-func (d *data) StringFunc(r Reader) (string, error) {
+func (d *data) StringFunc(r binstruct.Reader) (string, error) {
 	_, _, err := r.ReadBytes(1)
 	if err != nil {
 		return "", err
@@ -51,7 +52,7 @@ func (d *data) StringFunc(r Reader) (string, error) {
 	return string(str), nil
 }
 
-func (d *data) MapFunc(r Reader) error {
+func (d *data) MapFunc(r binstruct.Reader) error {
 	s := make(map[int]string)
 
 	for i := 0; i < 2; i++ {
@@ -106,7 +107,7 @@ func Example_decodeCustom() {
 
 	var actual data
 
-	decoder := NewDecoder(bytes.NewReader(b), binary.BigEndian)
+	decoder := binstruct.NewDecoder(bytes.NewReader(b), binary.BigEndian)
 	err := decoder.Decode(&actual)
 	if err != nil {
 		log.Fatal(err)
@@ -116,7 +117,7 @@ func Example_decodeCustom() {
 	spewCfg.SortKeys = true
 	fmt.Print(spewCfg.Sdump(actual))
 
-	// Output: (binstruct.data) {
+	// Output: (binstruct_test.data) {
 	//  StrLen: (int) 5,
 	//  Str: (string) (len=5) "hello",
 	//  Int: (int32) 10,
@@ -138,7 +139,7 @@ func Example_decodeCustom() {
 	//   (int) 1: (string) (len=3) "yay"
 	//  },
 	//  Skip: ([]uint8) <nil>,
-	//  Custom: (binstruct.custom) {
+	//  Custom: (binstruct_test.custom) {
 	//   ID: (int16) 255,
 	//   _: ([1]uint8) (len=1 cap=1) {
 	//    00000000  00                                                |.|

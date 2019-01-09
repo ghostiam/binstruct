@@ -1,4 +1,4 @@
-package binstruct
+package binstruct_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/ghostiam/binstruct"
 )
 
 type dataWithNullTerminatedString struct {
@@ -14,12 +15,12 @@ type dataWithNullTerminatedString struct {
 	OtherID int32
 }
 
-func (*dataWithNullTerminatedString) NullTerminatedString(r Reader) (string, error) {
+func (*dataWithNullTerminatedString) NullTerminatedString(r binstruct.Reader) (string, error) {
 	var b []byte
 
 	for {
 		readByte, err := r.ReadByte()
-		if IsEOF(err) {
+		if binstruct.IsEOF(err) {
 			break
 		}
 		if err != nil {
@@ -48,7 +49,7 @@ func Example_decoderDataWithNullTerminatedString() {
 
 	var actual dataWithNullTerminatedString
 
-	decoder := NewDecoder(bytes.NewReader(b), binary.BigEndian)
+	decoder := binstruct.NewDecoder(bytes.NewReader(b), binary.BigEndian)
 	err := decoder.Decode(&actual)
 	if err != nil {
 		panic(err)
@@ -57,7 +58,7 @@ func Example_decoderDataWithNullTerminatedString() {
 	fmt.Print(spew.Sdump(actual))
 
 	// Output:
-	// (binstruct.dataWithNullTerminatedString) {
+	// (binstruct_test.dataWithNullTerminatedString) {
 	//  ID: (int32) 5,
 	//  Type: (string) (len=4) "test",
 	//  OtherID: (int32) -16
