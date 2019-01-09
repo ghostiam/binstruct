@@ -32,7 +32,7 @@ type tag struct {
 	ElemTags []tag
 }
 
-func parseTag(t string) []tag {
+func parseTag(t string) ([]tag, error) {
 	var tags []tag
 
 	for {
@@ -63,6 +63,10 @@ func parseTag(t string) []tag {
 				idx := strings.IndexAny(in, "[]")
 				closeIndex += idx
 
+				if idx == -1 {
+					return nil, ErrTagUnbalanced
+				}
+
 				switch in[idx] {
 				case '[':
 					arrBalance--
@@ -79,7 +83,13 @@ func parseTag(t string) []tag {
 
 			t = v[closeIndex:]
 			v = v[1 : closeIndex-1]
-			tags = append(tags, tag{Type: tagTypeElement, ElemTags: parseTag(v)})
+
+			pt, err := parseTag(v)
+			if err != nil {
+				return nil, err
+			}
+
+			tags = append(tags, tag{Type: tagTypeElement, ElemTags: pt})
 		default:
 			t := strings.Split(v, ":")
 
@@ -97,7 +107,7 @@ func parseTag(t string) []tag {
 		}
 
 		if index == -1 {
-			return tags
+			return tags, nil
 		}
 	}
 }

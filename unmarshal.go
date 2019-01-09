@@ -42,7 +42,10 @@ func (u *unmarshal) Unmarshal(v interface{}) error {
 	valueType := structValue.Type()
 	for i := 0; i < numField; i++ {
 		fieldType := valueType.Field(i)
-		tags := parseTag(fieldType.Tag.Get(tagName))
+		tags, err := parseTag(fieldType.Tag.Get(tagName))
+		if err != nil {
+			return errors.Wrapf(err, `failed parseTag for field "%s"`, fieldType.Name)
+		}
 
 		fieldData, err := parseReadDataFromTags(structValue, tags)
 		if err != nil {

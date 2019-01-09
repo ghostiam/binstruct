@@ -9,9 +9,10 @@ import (
 
 func Test_parseTag(t *testing.T) {
 	tests := []struct {
-		name string
-		tag  string
-		want []tag
+		name    string
+		tag     string
+		want    []tag
+		wantErr error
 	}{
 		{
 			name: "empty",
@@ -93,10 +94,20 @@ func Test_parseTag(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "unbalanced",
+			tag:     "[",
+			wantErr: ErrTagUnbalanced,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := parseTag(tt.tag)
+			got, err := parseTag(tt.tag)
+			if tt.wantErr != nil {
+				require.EqualError(t, err, tt.wantErr.Error())
+				return
+			}
+
 			require.Equal(t, tt.want, got)
 		})
 	}
