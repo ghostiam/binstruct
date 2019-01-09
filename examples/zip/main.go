@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
-	"io"
 	"log"
 	"os"
 
@@ -44,7 +43,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 		var magicPrevByte byte
 		for {
 			b, err := r.ReadByte()
-			if errors.Cause(err) == io.EOF {
+			if binstruct.IsEOF(err) {
 				return nil
 			}
 			if err != nil {

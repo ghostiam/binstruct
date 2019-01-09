@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/pkg/errors"
 )
 
 type dataWithNullTerminatedString struct {
@@ -21,7 +19,7 @@ func (*dataWithNullTerminatedString) NullTerminatedString(r Reader) (string, err
 
 	for {
 		readByte, err := r.ReadByte()
-		if errors.Cause(err) == io.EOF {
+		if IsEOF(err) {
 			break
 		}
 		if err != nil {

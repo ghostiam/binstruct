@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"io"
 	"log"
 	"os"
 
@@ -40,7 +39,7 @@ func (png *PNG) ReadChunks(r binstruct.Reader) error {
 	for {
 		var c Chunk
 		err := r.Unmarshal(&c)
-		if errors.Cause(err) == io.EOF {
+		if binstruct.IsEOF(err) {
 			return nil
 		}
 		if err != nil {
@@ -178,7 +177,7 @@ func (d *InternationalTextData) NullTerminatedString(r binstruct.Reader) (string
 	var readCount int32
 	for {
 		readByte, err := r.ReadByte()
-		if errors.Cause(err) == io.EOF {
+		if binstruct.IsEOF(err) {
 			break
 		}
 		if err != nil {
