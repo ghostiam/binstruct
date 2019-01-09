@@ -206,7 +206,7 @@ func Test_parseReadDataFromTags(t *testing.T) {
 			},
 		},
 		{
-			name: "calc len 5+FieldValue",
+			name: "calc len 5-FieldValue",
 			args: args{
 				structValue: reflect.ValueOf(struct {
 					FieldValue int
@@ -251,13 +251,18 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				structValue: reflect.ValueOf(struct{}{}),
 				tags: []tag{
 					{
-						Type:  "len",
+						Type:  "offset",
 						Value: "-10",
 					},
 				},
 			},
 			want: &fieldReadData{
-				Length: ptrInt(-10),
+				Offsets: []fieldOffset{
+					{
+						Offset: -10,
+						Whence: 1,
+					},
+				},
 			},
 		},
 		{
@@ -266,13 +271,18 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				structValue: reflect.ValueOf(struct{}{}),
 				tags: []tag{
 					{
-						Type:  "len",
+						Type:  "offset",
 						Value: "-10 + -5",
 					},
 				},
 			},
 			want: &fieldReadData{
-				Length: ptrInt(-15),
+				Offsets: []fieldOffset{
+					{
+						Offset: -15,
+						Whence: 1,
+					},
+				},
 			},
 		},
 		{
@@ -281,13 +291,18 @@ func Test_parseReadDataFromTags(t *testing.T) {
 				structValue: reflect.ValueOf(struct{}{}),
 				tags: []tag{
 					{
-						Type:  "len",
+						Type:  "offset",
 						Value: "-10 + -5 + 5",
 					},
 				},
 			},
 			want: &fieldReadData{
-				Length: ptrInt(-10),
+				Offsets: []fieldOffset{
+					{
+						Offset: -10,
+						Whence: 1,
+					},
+				},
 			},
 		},
 	}
