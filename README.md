@@ -14,40 +14,75 @@ Golang binary decoder to structure
 
 ### From file or other io.ReadSeeker:
 ```go
-file, err := os.Open("sample.png")
-if err != nil {
-    log.Fatal(err)
-}
+package main
 
-var png PNG
-decoder := binstruct.NewDecoder(file, binary.BigEndian)
-decoder.SetDebug(true) // you can enable the output of bytes read for debugging
-err = decoder.Decode(&png)
-if err != nil {
-    log.Fatal(err)
-}
+import (
+	"encoding/binary"
+	"fmt"
+	"log"
+	"os"
 
-spew.Dump(png)
+	"github.com/ghostiam/binstruct"
+)
+
+func main() {
+	file, err := os.Open("testdata/file.bin")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	type dataStruct struct {
+		Arr []int16 `bin:"len:4"`
+	}
+
+	var actual dataStruct
+	decoder := binstruct.NewDecoder(file, binary.BigEndian)
+	// decoder.SetDebug(true) // you can enable the output of bytes read for debugging
+	err = decoder.Decode(&actual)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%+v", actual)
+
+	// Output:
+	// {Arr:[1 2 3 4]}
+}
 ```
 
 ### From bytes
 
 ```go
-data := []byte{
-    0x00, 0x01,
-    0x00, 0x02,
-    0x00, 0x03,
-    0x00, 0x04,
-}
+package main
 
-type dataStruct struct {
-    Arr []int16 `bin:"len:4"`
-}
+import (
+	"fmt"
+	"log"
+	
+	"github.com/ghostiam/binstruct"
+)
 
-var actual dataStruct
-err := UnmarshalBE(data, &actual) // UnmarshalLE() or Unmarshal()
-if err != nil {
-    log.Fatal(err)
+func main() {
+	data := []byte{
+		0x00, 0x01,
+		0x00, 0x02,
+		0x00, 0x03,
+		0x00, 0x04,
+	}
+
+	type dataStruct struct {
+		Arr []int16 `bin:"len:4"`
+	}
+
+	var actual dataStruct
+	err := binstruct.UnmarshalBE(data, &actual) // UnmarshalLE() or Unmarshal()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%+v", actual)
+
+	// Output: {Arr:[1 2 3 4]}
 }
 ```
 
@@ -82,6 +117,55 @@ type Reader interface {
 	ReadFloat64() (float64, error)
 
 	Unmarshaler
+}
+```
+
+Example:
+```go
+package main
+
+import (
+	"encoding/binary"
+	"fmt"
+	"log"
+	
+	"github.com/ghostiam/binstruct"
+)
+
+func main() {
+	data := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}
+
+	reader := binstruct.NewReaderFromBytes(data, binary.BigEndian, false)
+
+	i16, err := reader.ReadInt16()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(i16)
+
+	i32, err := reader.ReadInt32()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(i32)
+
+	an, b, err := reader.ReadBytes(4)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Read %d bytes: %#v\n", an, b)
+
+	other, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Read all: %#v\n", other)
+
+	// Output:
+	// 258
+	// 50595078
+	// Read 4 bytes: []byte{0x7, 0x8, 0x9, 0xa}
+	// Read all: []byte{0xb, 0xc, 0xd, 0xe, 0xf}
 }
 ```
 
@@ -124,9 +208,9 @@ type test struct {
 	Array [2]int32              // read 8 bytes (4+4byte for 2 int32)
 	Slice []int32 `bin:"len:2"` // read 8 bytes (4+4byte for 2 int32)
 	
-	// Also two-dimensional slices work (binstruct_test.go:209 Test_SliceOfSlice)
+	// Also two-dimensional slices work (binstruct_test.go:307 Test_SliceOfSlice)
 	Slice2D [][]int32 `bin:"len:2,[len:2]"`
-	// and even three-dimensional slices (binstruct_test.go:231 Test_SliceOfSliceOfSlice)
+	// and even three-dimensional slices (binstruct_test.go:329 Test_SliceOfSliceOfSlice)
 	Slice3D [][][]int32 `bin:"len:2,[len:2,[len:2]]"`
 	
 	// Structures and embedding are also supported.
