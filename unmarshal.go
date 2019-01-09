@@ -227,7 +227,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 			return errors.Wrap(err, "unmarshal struct")
 		}
 	default:
-		return errors.New("KIND not supported: " + fieldValue.Kind().String())
+		return errors.New(`type "` + fieldValue.Kind().String() + `" not supported`)
 	}
 
 	return nil

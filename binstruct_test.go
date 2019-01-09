@@ -62,6 +62,31 @@ func Test_OffsetsMany(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
+func Test_IntLE(t *testing.T) {
+	data := []byte{
+		0x01,
+		0x02, 0x00,
+		0x03, 0x00, 0x00, 0x00,
+		0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
+
+	type dataStruct struct {
+		I8  int8
+		I16 int16
+		I32 int32
+		I64 int64
+	}
+
+	want := dataStruct{
+		I8: 1, I16: 2, I32: 3, I64: 4,
+	}
+
+	var actual dataStruct
+	err := UnmarshalLE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
 func Test_IntBE(t *testing.T) {
 	data := []byte{
 		0x01,
@@ -110,6 +135,21 @@ func Test_IntBETag(t *testing.T) {
 	err := UnmarshalBE(data, &actual)
 	require.NoError(t, err)
 	require.Equal(t, want, actual)
+}
+
+func Test_IntBEWithoutLenTag(t *testing.T) {
+	data := []byte{
+		0x01,
+	}
+
+	type dataStruct struct {
+		I8 int
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.EqualError(t, err, `failed set value to field "I8": need set tag with len or use int8/int16/int32/int64`)
+	require.Equal(t, dataStruct{}, actual)
 }
 
 func Test_UintBE(t *testing.T) {
@@ -162,6 +202,21 @@ func Test_UintBETag(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
+func Test_UintBEWithoutLenTag(t *testing.T) {
+	data := []byte{
+		0x01,
+	}
+
+	type dataStruct struct {
+		I8 uint
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.EqualError(t, err, `failed set value to field "I8": need set tag with len or use uint8/uint16/uint32/uint64`)
+	require.Equal(t, dataStruct{}, actual)
+}
+
 func Test_FloatBE(t *testing.T) {
 	data := []byte{
 		0x40, 0x49, 0x0f, 0xdb,
@@ -176,6 +231,31 @@ func Test_FloatBE(t *testing.T) {
 	want := dataStruct{
 		F32: 3.1415927,
 		F64: 3.141592653589793,
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_Bool(t *testing.T) {
+	data := []byte{
+		0x00,
+		0x01,
+		0xFF,
+	}
+
+	type dataStruct struct {
+		B1 bool
+		B2 bool
+		B3 bool
+	}
+
+	want := dataStruct{
+		B1: false,
+		B2: true,
+		B3: true,
 	}
 
 	var actual dataStruct
@@ -204,6 +284,24 @@ func Test_Slice(t *testing.T) {
 	err := UnmarshalBE(data, &actual)
 	require.NoError(t, err)
 	require.Equal(t, want, actual)
+}
+
+func Test_SliceWithoutLenTag(t *testing.T) {
+	data := []byte{
+		0x00, 0x01,
+		0x00, 0x02,
+		0x00, 0x03,
+		0x00, 0x04,
+	}
+
+	type dataStruct struct {
+		Arr []int16
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.EqualError(t, err, `failed set value to field "Arr": need set tag with len for slice`)
+	require.Equal(t, dataStruct{}, actual)
 }
 
 func Test_SliceOfSlice(t *testing.T) {
@@ -392,6 +490,19 @@ func Test_String(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
+func Test_StringWithoutLenTag(t *testing.T) {
+	data := []byte{'h', 'e', 'l', 'l', 'o'}
+
+	type dataStruct struct {
+		Str string
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.EqualError(t, err, `failed set value to field "Str": need set tag with len for string`)
+	require.Equal(t, dataStruct{}, actual)
+}
+
 func Test_StringWithLenFromField(t *testing.T) {
 	data := []byte{0x00, 0x05, 'h', 'e', 'l', 'l', 'o'}
 
@@ -500,4 +611,35 @@ func Test_CustomMethod2(t *testing.T) {
 	err := UnmarshalBE(data, &actual)
 	require.NoError(t, err)
 	require.Equal(t, want, actual)
+}
+
+func Test_CustomMethodNotExist(t *testing.T) {
+	data := []byte{}
+
+	type dataCustomMethod3Struct struct {
+		Custom string `bin:"CustomMethodNotExist"`
+	}
+
+	var actual dataCustomMethod3Struct
+	err := UnmarshalBE(data, &actual)
+	require.EqualError(t, err, `failed set value to field "Custom": call custom func: 
+failed call method, expected methods:
+	func (*dataCustomMethod3Struct) CustomMethodNotExist(r binstruct.Reader) error {} 
+or
+	func (*dataCustomMethod3Struct) CustomMethodNotExist(r binstruct.Reader) (string, error) {}
+`)
+	require.Equal(t, dataCustomMethod3Struct{}, actual)
+}
+
+func Test_InvalidType(t *testing.T) {
+	data := []byte{}
+
+	type dataStruct struct {
+		Invalid interface{}
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.EqualError(t, err, `failed set value to field "Invalid": type "interface" not supported`)
+	require.Equal(t, dataStruct{}, actual)
 }
