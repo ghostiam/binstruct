@@ -11,10 +11,8 @@ type unmarshal struct {
 	r Reader
 }
 
-type Unmarshaler interface {
-	Unmarshal(v interface{}) error
-}
-
+// An InvalidUnmarshalError describes an invalid argument passed to Unmarshal.
+// (The argument to Unmarshal must be a non-nil pointer.)
 type InvalidUnmarshalError struct {
 	Type reflect.Type
 }

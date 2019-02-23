@@ -40,9 +40,11 @@ type Reader interface {
 	ReadFloat32() (float32, error)
 	ReadFloat64() (float64, error)
 
-	Unmarshaler
+	Unmarshal(v interface{}) error
 }
 
+// NewReader returns a new reader that reads from r with byte order.
+// If debug set true, all read bytes and offsets will be displayed.
 func NewReader(r io.ReadSeeker, order binary.ByteOrder, debug bool) Reader {
 	return &reader{
 		r:     r,
@@ -51,6 +53,8 @@ func NewReader(r io.ReadSeeker, order binary.ByteOrder, debug bool) Reader {
 	}
 }
 
+// NewReaderFromBytes returns a new reader that reads from data with byte order.
+// If debug set true, all read bytes and offsets will be displayed.
 func NewReaderFromBytes(data []byte, order binary.ByteOrder, debug bool) Reader {
 	return NewReader(bytes.NewReader(data), order, debug)
 }
