@@ -6,10 +6,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	ErrTagUnbalanced = errors.New("unbalanced square bracket")
-)
-
 // IsEOF checks that the error is EOF
 func IsEOF(err error) bool {
 	return errors.Cause(err) == io.EOF

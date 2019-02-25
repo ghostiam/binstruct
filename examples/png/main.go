@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// https://www.w3.org/TR/PNG/
-
+// Portable Network Graphics (PNG) Specification: https://www.w3.org/TR/PNG/
 func main() {
 	file, err := os.Open("sample.png")
 	if err != nil {
@@ -30,7 +29,7 @@ func main() {
 }
 
 type PNG struct {
-	Header [8]byte // 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
+	Header [8]byte // Magic: 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
 	IHDR   IHDR
 	Chunks []Chunk `bin:"ReadChunks"`
 }

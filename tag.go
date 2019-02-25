@@ -64,7 +64,7 @@ func parseTag(t string) ([]tag, error) {
 				closeIndex += idx
 
 				if idx == -1 {
-					return nil, ErrTagUnbalanced
+					return nil, errors.New("unbalanced square bracket")
 				}
 
 				switch in[idx] {

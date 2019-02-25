@@ -13,33 +13,53 @@ import (
 )
 
 var (
+	// ErrNegativeCount is returned when an attempt is made to read a negative number of bytes
 	ErrNegativeCount = errors.New("binstruct: negative count")
 )
 
+// Reader is the interface that wraps the binstruct reader methods.
 type Reader interface {
 	io.ReadSeeker
 
+	// Peek returns the next n bytes without advancing the reader.
 	Peek(n int) ([]byte, error)
 
+	// ReadBytes reads up to n bytes. It returns the number of bytes
+	// read, bytes and any error encountered.
 	ReadBytes(n int) (an int, b []byte, err error)
+	// ReadAll reads until an error or EOF and returns the data it read.
 	ReadAll() ([]byte, error)
 
+	// ReadByte read and return one byte
 	ReadByte() (byte, error)
+	// ReadBool read one byte and return boolean value
 	ReadBool() (bool, error)
 
+	// ReadUint8 read one byte and return uint8 value
 	ReadUint8() (uint8, error)
+	// ReadUint16 read two bytes and return uint16 value
 	ReadUint16() (uint16, error)
+	// ReadUint32 read four bytes and return uint32 value
 	ReadUint32() (uint32, error)
+	// ReadUint64 read eight bytes and return uint64 value
 	ReadUint64() (uint64, error)
 
+	// ReadInt8 read one byte and return int8 value
 	ReadInt8() (int8, error)
+	// ReadInt16 read two bytes and return int16 value
 	ReadInt16() (int16, error)
+	// ReadInt32 read four bytes and return int32 value
 	ReadInt32() (int32, error)
+	// ReadInt64 read eight bytes and return int64 value
 	ReadInt64() (int64, error)
 
+	// ReadFloat32 read four bytes and return float32 value
 	ReadFloat32() (float32, error)
+	// ReadFloat64 read eight bytes and return float64 value
 	ReadFloat64() (float64, error)
 
+	// Unmarshal parses the binary data and stores the result
+	// in the value pointed to by v.
 	Unmarshal(v interface{}) error
 }
 

@@ -11,8 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
-
+// .ZIP File Format Specification: https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
 func main() {
 	file, err := os.Open("sample.zip")
 	if err != nil {

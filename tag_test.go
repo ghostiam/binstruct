@@ -12,7 +12,7 @@ func Test_parseTag(t *testing.T) {
 		name    string
 		tag     string
 		want    []tag
-		wantErr error
+		wantErr string
 	}{
 		{
 			name: "empty",
@@ -97,17 +97,18 @@ func Test_parseTag(t *testing.T) {
 		{
 			name:    "unbalanced",
 			tag:     "[",
-			wantErr: ErrTagUnbalanced,
+			wantErr: "unbalanced square bracket",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := parseTag(tt.tag)
-			if tt.wantErr != nil {
-				require.EqualError(t, err, tt.wantErr.Error())
+			if tt.wantErr != "" {
+				require.EqualError(t, err, tt.wantErr)
 				return
 			}
 
+			require.NoError(t, err)
 			require.Equal(t, tt.want, got)
 		})
 	}
