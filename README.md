@@ -3,6 +3,9 @@
 # binstruct
 Golang binary decoder to structure
 
+# Install
+```go get -u github.com/ghostiam/binstruct```
+
 # Examples
 
 [ZIP decoder](examples/zip) \
