@@ -1,4 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ghostiam/binstruct)](https://goreportcard.com/report/github.com/ghostiam/binstruct) [![Build Status](https://travis-ci.com/ghostiam/binstruct.svg?branch=master)](https://travis-ci.com/ghostiam/binstruct) [![CodeCov](https://codecov.io/gh/ghostiam/binstruct/branch/master/graph/badge.svg)](https://codecov.io/gh/ghostiam/binstruct) [![GoDoc](https://godoc.org/github.com/ghostiam/binstruct?status.svg)](https://godoc.org/github.com/ghostiam/binstruct) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ghostiam/binstruct/blob/master/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fghostiam%2Fbinstruct.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fghostiam%2Fbinstruct?ref=badge_shield)
 
 # binstruct
 Golang binary decoder to structure
@@ -288,3 +289,6 @@ See the tests and examples for more information.
 # License
 
 MIT License
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fghostiam%2Fbinstruct.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fghostiam%2Fbinstruct?ref=badge_large)
