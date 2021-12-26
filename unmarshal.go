@@ -29,6 +29,10 @@ func (e *InvalidUnmarshalError) Error() string {
 }
 
 func (u *unmarshal) Unmarshal(v interface{}) error {
+	return u.unmarshal(v, nil)
+}
+
+func (u *unmarshal) unmarshal(v interface{}, parentStructValues []reflect.Value) error {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {
 		return &InvalidUnmarshalError{reflect.TypeOf(v)}
@@ -51,7 +55,7 @@ func (u *unmarshal) Unmarshal(v interface{}) error {
 		}
 
 		fieldValue := structValue.Field(i)
-		err = u.setValueToField(structValue, fieldValue, fieldData)
+		err = u.setValueToField(structValue, fieldValue, fieldData, parentStructValues)
 		if err != nil {
 			return errors.Wrapf(err, `failed set value to field "%s"`, fieldType.Name)
 		}
@@ -60,7 +64,7 @@ func (u *unmarshal) Unmarshal(v interface{}) error {
 	return nil
 }
 
-func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, fieldData *fieldReadData) error {
+func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, fieldData *fieldReadData, parentStructValues []reflect.Value) error {
 	if fieldData == nil {
 		fieldData = &fieldReadData{}
 	}
@@ -79,9 +83,36 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 		if err != nil {
 			return errors.Wrap(err, "call custom func")
 		}
-		if okCallFunc {
-			return nil
+
+		if !okCallFunc {
+			// Try call function from parent structs
+			for i := len(parentStructValues) - 1; i >= 0; i-- {
+				sv := parentStructValues[i]
+				okCallFunc, err = callFunc(u.r, fieldData.FuncName, sv, fieldValue)
+				if err != nil {
+					return errors.Wrap(err, "call custom func")
+				}
+
+				if okCallFunc {
+					return nil
+				}
+			}
+
+			message := `
+failed call method, expected methods:
+	func (*{{Struct}}) {{MethodName}}(r binstruct.Reader) error {} 
+or
+	func (*{{Struct}}) {{MethodName}}(r binstruct.Reader) ({{FieldType}}, error) {}
+`
+			message = strings.NewReplacer(
+				`{{Struct}}`, structValue.Type().Name(),
+				`{{MethodName}}`, fieldData.FuncName,
+				`{{FieldType}}`, fieldValue.Type().String(),
+			).Replace(message)
+			return errors.New(message)
 		}
+
+		return nil
 	}
 
 	switch fieldValue.Kind() {
@@ -190,7 +221,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 
 		for i := int64(0); i < *fieldData.Length; i++ {
 			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
-			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData)
+			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
 			if err != nil {
 				return err
 			}
@@ -211,7 +242,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 
 		for i := int64(0); i < arrLen; i++ {
 			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
-			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData)
+			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
 			if err != nil {
 				return err
 			}
@@ -220,7 +251,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 			}
 		}
 	case reflect.Struct:
-		err := u.Unmarshal(fieldValue.Addr().Interface())
+		err := u.unmarshal(fieldValue.Addr().Interface(), append(parentStructValues, structValue))
 		if err != nil {
 			return errors.Wrap(err, "unmarshal struct")
 		}
@@ -263,18 +294,7 @@ func callFunc(r Reader, funcName string, structValue, fieldValue reflect.Value) 
 		}
 	}
 
-	message := `
-failed call method, expected methods:
-	func (*{{Struct}}) {{MethodName}}(r binstruct.Reader) error {} 
-or
-	func (*{{Struct}}) {{MethodName}}(r binstruct.Reader) ({{FieldType}}, error) {}
-`
-	message = strings.NewReplacer(
-		`{{Struct}}`, structValue.Type().Name(),
-		`{{MethodName}}`, funcName,
-		`{{FieldType}}`, fieldValue.Type().String(),
-	).Replace(message)
-	return false, errors.New(message)
+	return false, nil
 }
 
 func setOffset(r Reader, fieldData *fieldReadData) error {

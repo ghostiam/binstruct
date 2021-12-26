@@ -1,6 +1,7 @@
 package binstruct
 
 import (
+	"encoding/binary"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -622,7 +623,7 @@ func Test_CustomMethodNotExist(t *testing.T) {
 
 	var actual dataCustomMethod3Struct
 	err := UnmarshalBE(data, &actual)
-	require.EqualError(t, err, `failed set value to field "Custom": call custom func: 
+	require.EqualError(t, err, `failed set value to field "Custom": 
 failed call method, expected methods:
 	func (*dataCustomMethod3Struct) CustomMethodNotExist(r binstruct.Reader) error {} 
 or
@@ -642,4 +643,62 @@ func Test_InvalidType(t *testing.T) {
 	err := UnmarshalBE(data, &actual)
 	require.EqualError(t, err, `failed set value to field "Invalid": type "interface" not supported`)
 	require.Equal(t, dataStruct{}, actual)
+}
+
+type CustomMethodFromParent struct {
+	Pin struct {
+		Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+
+		Pin struct {
+			Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+
+			Pin struct {
+				Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+			}
+		}
+	}
+}
+
+func (*CustomMethodFromParent) CustomMethodFromParent(r Reader) (uint16, error) {
+	var out uint16
+	if err := binary.Read(r, binary.LittleEndian, &out); err != nil {
+		return 0, err
+	}
+	return out, nil
+}
+
+func Test_CustomMethodFromParent_Issue4(t *testing.T) {
+	d := []byte{0x01, 0x00, 0x02, 0x00, 0x03, 0x00}
+
+	want := CustomMethodFromParent{
+		Pin: struct {
+			Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+			Pin      struct {
+				Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+				Pin      struct {
+					Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+				}
+			}
+		}{
+			Checksum: 1,
+			Pin: struct {
+				Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+				Pin      struct {
+					Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+				}
+			}{
+				Checksum: 2,
+				Pin: struct {
+					Checksum uint16 `bin:"CustomMethodFromParent,len:2"`
+				}{
+					Checksum: 3,
+				},
+			},
+		},
+	}
+
+	var actual CustomMethodFromParent
+	err := UnmarshalLE(d, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
 }
