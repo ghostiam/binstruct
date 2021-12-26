@@ -1,10 +1,10 @@
 package binstruct
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type unmarshal struct {
@@ -46,18 +46,18 @@ func (u *unmarshal) unmarshal(v interface{}, parentStructValues []reflect.Value)
 		fieldType := valueType.Field(i)
 		tags, err := parseTag(fieldType.Tag.Get(tagName))
 		if err != nil {
-			return errors.Wrapf(err, `failed parseTag for field "%s"`, fieldType.Name)
+			return fmt.Errorf(`failed parseTag for field "%s": %w`, fieldType.Name, err)
 		}
 
 		fieldData, err := parseReadDataFromTags(structValue, tags)
 		if err != nil {
-			return errors.Wrapf(err, `failed parse ReadData from tags for field "%s"`, fieldType.Name)
+			return fmt.Errorf(`failed parse ReadData from tags for field "%s": %w`, fieldType.Name, err)
 		}
 
 		fieldValue := structValue.Field(i)
 		err = u.setValueToField(structValue, fieldValue, fieldData, parentStructValues)
 		if err != nil {
-			return errors.Wrapf(err, `failed set value to field "%s"`, fieldType.Name)
+			return fmt.Errorf(`failed set value to field "%s": %w`, fieldType.Name, err)
 		}
 	}
 
@@ -75,14 +75,14 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 
 	err := setOffset(u.r, fieldData)
 	if err != nil {
-		return errors.Wrap(err, "set offset")
+		return fmt.Errorf("set offset: %w", err)
 	}
 
 	if fieldData.FuncName != "" {
 		var okCallFunc bool
 		okCallFunc, err = callFunc(u.r, fieldData.FuncName, structValue, fieldValue)
 		if err != nil {
-			return errors.Wrap(err, "call custom func")
+			return fmt.Errorf("call custom func: %w", err)
 		}
 
 		if !okCallFunc {
@@ -91,7 +91,7 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 				sv := parentStructValues[i]
 				okCallFunc, err = callFunc(u.r, fieldData.FuncName, sv, fieldValue)
 				if err != nil {
-					return errors.Wrap(err, "call custom func")
+					return fmt.Errorf("call custom func from parent(%s): %w", sv.Type().Name(), err)
 				}
 
 				if okCallFunc {
@@ -252,7 +252,7 @@ or
 	case reflect.Struct:
 		err = u.unmarshal(fieldValue.Addr().Interface(), append(parentStructValues, structValue))
 		if err != nil {
-			return errors.Wrap(err, "unmarshal struct")
+			return fmt.Errorf("unmarshal struct: %w", err)
 		}
 	default:
 		return errors.New(`type "` + fieldValue.Kind().String() + `" not supported`)
@@ -300,7 +300,7 @@ func setOffset(r Reader, fieldData *fieldReadData) error {
 	for _, v := range fieldData.Offsets {
 		_, err := r.Seek(v.Offset, v.Whence)
 		if err != nil {
-			return errors.Wrap(err, "seek")
+			return fmt.Errorf("seek: %w", err)
 		}
 	}
 

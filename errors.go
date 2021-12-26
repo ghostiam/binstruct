@@ -1,17 +1,18 @@
 package binstruct
 
 import (
+	"errors"
 	"io"
-
-	"github.com/pkg/errors"
 )
 
+// Deprecated: use errors.Is(err, io.EOF)
 // IsEOF checks that the error is EOF
 func IsEOF(err error) bool {
-	return errors.Cause(err) == io.EOF
+	return errors.Is(err, io.EOF)
 }
 
+// Deprecated: use errors.Is(err, io.ErrUnexpectedEOF)
 // IsUnexpectedEOF checks that the error is Unexpected EOF
 func IsUnexpectedEOF(err error) bool {
-	return errors.Cause(err) == io.ErrUnexpectedEOF
+	return errors.Is(err, io.ErrUnexpectedEOF)
 }

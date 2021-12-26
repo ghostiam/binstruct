@@ -2,12 +2,15 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
 	"log"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
+
 	"github.com/ghostiam/binstruct"
-	"github.com/pkg/errors"
 )
 
 // Portable Network Graphics (PNG) Specification: https://www.w3.org/TR/PNG/
@@ -38,11 +41,11 @@ func (png *PNG) ReadChunks(r binstruct.Reader) error {
 	for {
 		var c Chunk
 		err := r.Unmarshal(&c)
-		if binstruct.IsEOF(err) {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
-			return errors.Wrap(err, "failed read png chunk")
+			return fmt.Errorf("failed read png chunk: %w", err)
 		}
 
 		png.Chunks = append(png.Chunks, c)
@@ -176,7 +179,7 @@ func (d *InternationalTextData) NullTerminatedString(r binstruct.Reader) (string
 	var readCount int32
 	for {
 		readByte, err := r.ReadByte()
-		if binstruct.IsEOF(err) {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

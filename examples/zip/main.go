@@ -3,12 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
 	"log"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
+
 	"github.com/ghostiam/binstruct"
-	"github.com/pkg/errors"
 )
 
 // .ZIP File Format Specification: https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
@@ -42,11 +45,11 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 		var magicPrevByte byte
 		for {
 			b, err := r.ReadByte()
-			if binstruct.IsEOF(err) {
+			if errors.Is(err, io.EOF) {
 				return nil
 			}
 			if err != nil {
-				return errors.Wrap(err, "failed read magic PK")
+				return fmt.Errorf("failed read magic PK: %w", err)
 			}
 
 			if magicPrevByte == 'P' && b == 'K' {
@@ -60,7 +63,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 		// read section type
 		_, sectionType, err := r.ReadBytes(2)
 		if err != nil {
-			return errors.Wrap(err, "failed read section type")
+			return fmt.Errorf("failed read section type: %w", err)
 		}
 
 		switch {
@@ -69,7 +72,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 			var localFileSection ZIPLocalFileSection
 			err = r.Unmarshal(&localFileSection)
 			if err != nil {
-				return errors.Wrap(err, "failed Unmarshal ZIPLocalFileSection")
+				return fmt.Errorf("failed Unmarshal ZIPLocalFileSection: %w", err)
 			}
 
 			zip.LocalFileSections = append(zip.LocalFileSections, localFileSection)
@@ -79,7 +82,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 			var centralDirEntrySections ZIPCentralDirEntrySection
 			err = r.Unmarshal(&centralDirEntrySections)
 			if err != nil {
-				return errors.Wrap(err, "failed Unmarshal ZIPCentralDirEntrySection")
+				return fmt.Errorf("failed Unmarshal ZIPCentralDirEntrySection: %w", err)
 			}
 
 			zip.CentralDirEntrySections = append(zip.CentralDirEntrySections, centralDirEntrySections)
@@ -89,7 +92,7 @@ func (zip *ZIP) ParseZIPSections(r binstruct.Reader) error {
 			var endOfCentralDirSections ZIPEndOfCentralDirSection
 			err = r.Unmarshal(&endOfCentralDirSections)
 			if err != nil {
-				return errors.Wrap(err, "failed Unmarshal ZIPEndOfCentralDir")
+				return fmt.Errorf("failed Unmarshal ZIPEndOfCentralDir: %w", err)
 			}
 
 			zip.EndOfCentralDirSection = endOfCentralDirSections
