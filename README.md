@@ -138,6 +138,9 @@ type Reader interface {
 	// Unmarshal parses the binary data and stores the result
 	// in the value pointed to by v.
 	Unmarshal(v interface{}) error
+
+	// WithOrder changes the byte order for the new Reader
+	WithOrder(order binary.ByteOrder) Reader
 }
 ```
 
@@ -275,6 +278,13 @@ type test struct {
 	DataLength              int    // actual length
 	ValueFromOtherField     string `bin:"len:DataLength"`
 	CalcValueFromOtherField string `bin:"len:DataLength+10"` // also work calculations
+
+	// You can change the byte order directly from the tag
+	UInt16LE uint16 `bin:"le"`
+	UInt16BE uint16 `bin:"be"`
+	// Or when you call the method, it will contain the Reader with the byte order you need
+	CallMethodWithLEReader uint16 `bin:"MethodNameWithLEReader,le"`
+	CallMethodWithBEReader uint16 `bin:"be,MethodNameWithBEReader"`
 } 
 
 // Method can be:

@@ -1,6 +1,7 @@
 package binstruct
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 	"reflect"
@@ -17,6 +18,9 @@ const (
 	tagTypeIgnore  = "-"
 	tagTypeFunc    = "func"
 	tagTypeElement = "elem"
+
+	tagTypeOrderLE = "le"
+	tagTypeOrderBE = "be"
 
 	tagTypeLength            = "len"
 	tagTypeOffsetFromCurrent = "offset"
@@ -51,8 +55,10 @@ func parseTag(t string) ([]tag, error) {
 		switch {
 		case v == tagTypeEmpty:
 			// Just skip
+
 		case v == tagTypeIgnore:
 			tags = append(tags, tag{Type: tagTypeIgnore})
+
 		case strings.HasPrefix(v, "["):
 			v = v + "," + t
 			var arrBalance int
@@ -89,6 +95,13 @@ func parseTag(t string) ([]tag, error) {
 			}
 
 			tags = append(tags, tag{Type: tagTypeElement, ElemTags: pt})
+
+		case v == tagTypeOrderLE:
+			tags = append(tags, tag{Type: tagTypeOrderLE})
+
+		case v == tagTypeOrderBE:
+			tags = append(tags, tag{Type: tagTypeOrderBE})
+
 		default:
 			ts := strings.Split(v, ":")
 
@@ -121,6 +134,7 @@ type fieldReadData struct {
 	Length   *int64
 	Offsets  []fieldOffset
 	FuncName string
+	Order    binary.ByteOrder
 
 	ElemFieldData *fieldReadData // if type Element
 }
@@ -239,6 +253,12 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 
 		case tagTypeElement:
 			data.ElemFieldData, err = parseReadDataFromTags(structValue, t.ElemTags)
+
+		case tagTypeOrderLE:
+			data.Order = binary.LittleEndian
+
+		case tagTypeOrderBE:
+			data.Order = binary.BigEndian
 		}
 
 		if err != nil {

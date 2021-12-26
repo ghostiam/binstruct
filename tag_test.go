@@ -25,6 +25,16 @@ func Test_parseTag(t *testing.T) {
 			want: []tag{{Type: "-"}},
 		},
 		{
+			name: "le",
+			tag:  "le",
+			want: []tag{{Type: "le"}},
+		},
+		{
+			name: "be",
+			tag:  "be",
+			want: []tag{{Type: "be"}},
+		},
+		{
 			name: "func",
 			tag:  "TestFunc",
 			want: []tag{{Type: "func", Value: "TestFunc"}},

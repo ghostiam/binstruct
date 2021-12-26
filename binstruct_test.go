@@ -668,7 +668,7 @@ func (*CustomMethodFromParent) CustomMethodFromParent(r Reader) (uint16, error) 
 }
 
 func Test_CustomMethodFromParent_Issue4(t *testing.T) {
-	d := []byte{0x01, 0x00, 0x02, 0x00, 0x03, 0x00}
+	data := []byte{0x01, 0x00, 0x02, 0x00, 0x03, 0x00}
 
 	want := CustomMethodFromParent{
 		Pin: struct {
@@ -698,7 +698,55 @@ func Test_CustomMethodFromParent_Issue4(t *testing.T) {
 	}
 
 	var actual CustomMethodFromParent
-	err := UnmarshalLE(d, &actual)
+	err := UnmarshalLE(data, &actual)
 	require.NoError(t, err)
 	require.Equal(t, want, actual)
+}
+
+type LeAndBeInOneStruct struct {
+	UInt16             uint16
+	UInt16LE           uint16 `bin:"le"`
+	UInt16BE           uint16 `bin:"be"`
+	UInt16WithLEReader uint16 `bin:"ParseUInt16WithLEReader,le"`
+	UInt16WithBEReader uint16 `bin:"be,ParseUInt16WithBEReader"`
+	UInt16Check        uint16
+}
+
+func (*LeAndBeInOneStruct) ParseUInt16WithLEReader(r Reader) (uint16, error) {
+	return r.ReadUint16()
+}
+
+func (*LeAndBeInOneStruct) ParseUInt16WithBEReader(r Reader) (uint16, error) {
+	return r.ReadUint16()
+}
+
+func Test_LeAndBeInOneStruct(t *testing.T) {
+	data := []byte{0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00, 0x06, 0x00}
+
+	wantLE := LeAndBeInOneStruct{
+		UInt16:             1,
+		UInt16LE:           2,
+		UInt16BE:           768,
+		UInt16WithLEReader: 4,
+		UInt16WithBEReader: 1280,
+		UInt16Check:        6,
+	}
+
+	wantBE := LeAndBeInOneStruct{
+		UInt16:             256,
+		UInt16LE:           2,
+		UInt16BE:           768,
+		UInt16WithLEReader: 4,
+		UInt16WithBEReader: 1280,
+		UInt16Check:        1536,
+	}
+
+	var actual LeAndBeInOneStruct
+	err := UnmarshalLE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, wantLE, actual)
+
+	err = UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, wantBE, actual)
 }

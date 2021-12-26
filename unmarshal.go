@@ -73,23 +73,28 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 		return nil
 	}
 
-	err := setOffset(u.r, fieldData)
+	r := u.r
+	if fieldData.Order != nil {
+		r = r.WithOrder(fieldData.Order)
+	}
+
+	err := setOffset(r, fieldData)
 	if err != nil {
 		return fmt.Errorf("set offset: %w", err)
 	}
 
 	if fieldData.FuncName != "" {
 		var okCallFunc bool
-		okCallFunc, err = callFunc(u.r, fieldData.FuncName, structValue, fieldValue)
+		okCallFunc, err = callFunc(r, fieldData.FuncName, structValue, fieldValue)
 		if err != nil {
-			return fmt.Errorf("call custom func: %w", err)
+			return fmt.Errorf("call custom func(%s): %w", structValue.Type().Name(), err)
 		}
 
 		if !okCallFunc {
 			// Try call function from parent structs
 			for i := len(parentStructValues) - 1; i >= 0; i-- {
 				sv := parentStructValues[i]
-				okCallFunc, err = callFunc(u.r, fieldData.FuncName, sv, fieldValue)
+				okCallFunc, err = callFunc(r, fieldData.FuncName, sv, fieldValue)
 				if err != nil {
 					return fmt.Errorf("call custom func from parent(%s): %w", sv.Type().Name(), err)
 				}
@@ -122,19 +127,19 @@ or
 
 		switch {
 		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Int8:
-			v, e := u.r.ReadInt8()
+			v, e := r.ReadInt8()
 			value = int64(v)
 			err = e
 		case fieldData.Length != nil && *fieldData.Length == 2 || fieldValue.Kind() == reflect.Int16:
-			v, e := u.r.ReadInt16()
+			v, e := r.ReadInt16()
 			value = int64(v)
 			err = e
 		case fieldData.Length != nil && *fieldData.Length == 4 || fieldValue.Kind() == reflect.Int32:
-			v, e := u.r.ReadInt32()
+			v, e := r.ReadInt32()
 			value = int64(v)
 			err = e
 		case fieldData.Length != nil && *fieldData.Length == 8 || fieldValue.Kind() == reflect.Int64:
-			value, err = u.r.ReadInt64()
+			value, err = r.ReadInt64()
 		default: // reflect.Int:
 			err = errors.New("need set tag with len or use int8/int16/int32/int64")
 		}
@@ -150,19 +155,19 @@ or
 
 		switch {
 		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Uint8:
-			v, e := u.r.ReadUint8()
+			v, e := r.ReadUint8()
 			value = uint64(v)
 			err = e
 		case fieldData.Length != nil && *fieldData.Length == 2 || fieldValue.Kind() == reflect.Uint16:
-			v, e := u.r.ReadUint16()
+			v, e := r.ReadUint16()
 			value = uint64(v)
 			err = e
 		case fieldData.Length != nil && *fieldData.Length == 4 || fieldValue.Kind() == reflect.Uint32:
-			v, e := u.r.ReadUint32()
+			v, e := r.ReadUint32()
 			value = uint64(v)
 			err = e
 		case fieldData.Length != nil && *fieldData.Length == 8 || fieldValue.Kind() == reflect.Uint64:
-			value, err = u.r.ReadUint64()
+			value, err = r.ReadUint64()
 		default: // reflect.Uint:
 			err = errors.New("need set tag with len or use uint8/uint16/uint32/uint64")
 		}
@@ -174,7 +179,7 @@ or
 			fieldValue.SetUint(value)
 		}
 	case reflect.Float32:
-		f, err := u.r.ReadFloat32()
+		f, err := r.ReadFloat32()
 		if err != nil {
 			return err
 		}
@@ -183,7 +188,7 @@ or
 			fieldValue.SetFloat(float64(f))
 		}
 	case reflect.Float64:
-		f, err := u.r.ReadFloat64()
+		f, err := r.ReadFloat64()
 		if err != nil {
 			return err
 		}
@@ -192,7 +197,7 @@ or
 			fieldValue.SetFloat(f)
 		}
 	case reflect.Bool:
-		b, err := u.r.ReadBool()
+		b, err := r.ReadBool()
 		if err != nil {
 			return err
 		}
@@ -205,7 +210,7 @@ or
 			return errors.New("need set tag with len for string")
 		}
 
-		_, b, err := u.r.ReadBytes(int(*fieldData.Length))
+		_, b, err := r.ReadBytes(int(*fieldData.Length))
 		if err != nil {
 			return err
 		}

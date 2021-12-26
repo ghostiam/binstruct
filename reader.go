@@ -61,6 +61,9 @@ type Reader interface {
 	// Unmarshal parses the binary data and stores the result
 	// in the value pointed to by v.
 	Unmarshal(v interface{}) error
+
+	// WithOrder changes the byte order for the new Reader
+	WithOrder(order binary.ByteOrder) Reader
 }
 
 // NewReader returns a new reader that reads from r with byte order.
@@ -244,4 +247,8 @@ func (r *reader) Peek(n int) ([]byte, error) {
 func (r *reader) Unmarshal(v interface{}) error {
 	u := &unmarshal{r}
 	return u.Unmarshal(v)
+}
+
+func (r *reader) WithOrder(order binary.ByteOrder) Reader {
+	return NewReader(r, order, r.debug)
 }
