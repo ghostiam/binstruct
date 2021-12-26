@@ -79,7 +79,8 @@ func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, field
 	}
 
 	if fieldData.FuncName != "" {
-		okCallFunc, err := callFunc(u.r, fieldData.FuncName, structValue, fieldValue)
+		var okCallFunc bool
+		okCallFunc, err = callFunc(u.r, fieldData.FuncName, structValue, fieldValue)
 		if err != nil {
 			return errors.Wrap(err, "call custom func")
 		}
@@ -118,7 +119,6 @@ or
 	switch fieldValue.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		var value int64
-		var err error
 
 		switch {
 		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Int8:
@@ -147,7 +147,6 @@ or
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		var value uint64
-		var err error
 
 		switch {
 		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Uint8:
@@ -221,7 +220,7 @@ or
 
 		for i := int64(0); i < *fieldData.Length; i++ {
 			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
-			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
+			err = u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
 			if err != nil {
 				return err
 			}
@@ -242,7 +241,7 @@ or
 
 		for i := int64(0); i < arrLen; i++ {
 			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
-			err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
+			err = u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
 			if err != nil {
 				return err
 			}
@@ -251,7 +250,7 @@ or
 			}
 		}
 	case reflect.Struct:
-		err := u.unmarshal(fieldValue.Addr().Interface(), append(parentStructValues, structValue))
+		err = u.unmarshal(fieldValue.Addr().Interface(), append(parentStructValues, structValue))
 		if err != nil {
 			return errors.Wrap(err, "unmarshal struct")
 		}

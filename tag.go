@@ -91,12 +91,12 @@ func parseTag(t string) ([]tag, error) {
 
 			tags = append(tags, tag{Type: tagTypeElement, ElemTags: pt})
 		default:
-			t := strings.Split(v, ":")
+			ts := strings.Split(v, ":")
 
-			if len(t) == 2 {
+			if len(ts) == 2 {
 				tags = append(tags, tag{
-					Type:  t[0],
-					Value: t[1],
+					Type:  ts[0],
+					Value: ts[1],
 				})
 			} else {
 				tags = append(tags, tag{
