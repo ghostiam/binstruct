@@ -3,13 +3,12 @@ package binstruct
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 var (
@@ -93,7 +92,7 @@ func (r *reader) ReadAll() ([]byte, error) {
 	b, err := ioutil.ReadAll(r)
 
 	if r.debug {
-		fmt.Printf("ReadAll(): %s", spew.Sdump(b))
+		fmt.Printf("ReadAll(): %s", hex.Dump(b))
 	}
 
 	return b, err
@@ -113,7 +112,7 @@ func (r *reader) ReadBytes(n int) (an int, b []byte, err error) {
 	an, err = io.ReadFull(r, b)
 
 	if r.debug {
-		fmt.Printf("Read(want: %d|actual: %d): %s", n, an, spew.Sdump(b))
+		fmt.Printf("Read(want: %d|actual: %d): %s", n, an, hex.Dump(b))
 	}
 
 	if err != nil {

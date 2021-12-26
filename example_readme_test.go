@@ -54,18 +54,10 @@ func Example_readmeFromIOReadSeekerWithDebuging() {
 	fmt.Printf("%+v", actual)
 
 	// Output:
-	// Read(want: 2|actual: 2): ([]uint8) (len=2 cap=2) {
-	//  00000000  00 01                                             |..|
-	// }
-	// Read(want: 2|actual: 2): ([]uint8) (len=2 cap=2) {
-	//  00000000  00 02                                             |..|
-	// }
-	// Read(want: 2|actual: 2): ([]uint8) (len=2 cap=2) {
-	//  00000000  00 03                                             |..|
-	// }
-	// Read(want: 2|actual: 2): ([]uint8) (len=2 cap=2) {
-	//  00000000  00 04                                             |..|
-	// }
+	// Read(want: 2|actual: 2): 00000000  00 01                                             |..|
+	// Read(want: 2|actual: 2): 00000000  00 02                                             |..|
+	// Read(want: 2|actual: 2): 00000000  00 03                                             |..|
+	// Read(want: 2|actual: 2): 00000000  00 04                                             |..|
 	// {Arr:[1 2 3 4]}
 }
 
