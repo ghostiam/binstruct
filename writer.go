@@ -1,13 +1,16 @@
 package binstruct
 
 import (
-	"bytes"
 	"encoding/binary"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"io"
+	"math"
 )
 
 type Writer interface {
-	io.Writer
+	io.WriteSeeker
 
 	// WriteBool write one byte boolean.
 	WriteBool(v bool) error
@@ -52,12 +55,6 @@ func NewWriter(w io.Writer, order binary.ByteOrder, debug bool) Writer {
 	}
 }
 
-// NewWriterToBuf returns a new writer that writes to buffer with byte order.
-// If debug set true, all write bytes and offsets will be displayed.
-func NewWriterToBuf(buf []byte, order binary.ByteOrder, debug bool) Writer {
-	return NewWriter(bytes.NewBuffer(buf), order, debug)
-}
-
 type writer struct {
 	w     io.Writer
 	order binary.ByteOrder
@@ -66,57 +63,106 @@ type writer struct {
 }
 
 func (w *writer) Write(p []byte) (n int, err error) {
-	return w.w.Write(p)
+	n, err = w.w.Write(p)
+
+	if w.debug {
+		fmt.Printf("Write(want: %d|actual: %d): %s", len(p), n, hex.Dump(p))
+	}
+
+	return n, err
 }
 
-func (w *writer) WriteBool(b bool) error {
-	panic("implement me")
+func (w *writer) WriteBool(v bool) error {
+	b := byte(0)
+	if v {
+		b = 1
+	}
+
+	_, err := w.Write([]byte{b})
+	return err
 }
 
 func (w *writer) WriteUint8(v uint8) error {
-	panic("implement me")
+	_, err := w.Write([]byte{v})
+	return err
 }
 
 func (w *writer) WriteUint16(v uint16) error {
-	panic("implement me")
+	b := make([]byte, 2)
+	w.order.PutUint16(b, v)
+	_, err := w.Write(b)
+	return err
 }
 
 func (w *writer) WriteUint32(v uint32) error {
-	panic("implement me")
+	b := make([]byte, 4)
+	w.order.PutUint32(b, v)
+	_, err := w.Write(b)
+	return err
 }
 
 func (w *writer) WriteUint64(v uint64) error {
-	panic("implement me")
+	b := make([]byte, 8)
+	w.order.PutUint64(b, v)
+	_, err := w.Write(b)
+	return err
 }
 
 func (w *writer) WriteInt8(v int8) error {
-	panic("implement me")
+	return w.WriteUint8(uint8(v))
 }
 
 func (w *writer) WriteInt16(v int16) error {
-	panic("implement me")
+	return w.WriteUint16(uint16(v))
 }
 
 func (w *writer) WriteInt32(v int32) error {
-	panic("implement me")
+	return w.WriteUint32(uint32(v))
 }
 
 func (w *writer) WriteInt64(v int64) error {
-	panic("implement me")
+	return w.WriteUint64(uint64(v))
 }
 
 func (w *writer) WriteFloat32(v float32) error {
-	panic("implement me")
+	return w.WriteUint32(math.Float32bits(v))
 }
 
 func (w *writer) WriteFloat64(v float64) error {
-	panic("implement me")
+	return w.WriteUint64(math.Float64bits(v))
 }
 
 func (w *writer) Marshal(v interface{}) ([]byte, error) {
+	// TODO implement me
 	panic("implement me")
 }
 
 func (w *writer) WithOrder(order binary.ByteOrder) Writer {
-	panic("implement me")
+	return NewWriter(w, order, w.debug)
+}
+
+// io.Seeker
+func (w *writer) Seek(offset int64, whence int) (int64, error) {
+	ws, ok := w.w.(io.Seeker)
+	if !ok {
+		return 0, errors.New("writer not implemented io.Seeker")
+	}
+
+	i, err := ws.Seek(offset, whence)
+
+	if w.debug {
+		whenceStr := "invalid"
+		switch whence {
+		case io.SeekStart:
+			whenceStr = "SeekStart"
+		case io.SeekCurrent:
+			whenceStr = "SeekCurrent"
+		case io.SeekEnd:
+			whenceStr = "SeekEnd"
+		}
+
+		fmt.Printf("Seek(%d, %s) CurPos:%d\n", offset, whenceStr, i)
+	}
+
+	return i, err
 }
