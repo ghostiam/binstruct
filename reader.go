@@ -42,6 +42,8 @@ type Reader interface {
 	ReadUint32() (uint32, error)
 	// ReadUint64 read eight bytes and return uint64 value
 	ReadUint64() (uint64, error)
+	// ReadUintX read X bytes and return uint64 value
+	ReadUintX(x int) (uint64, error)
 
 	// ReadInt8 read one byte and return int8 value
 	ReadInt8() (int8, error)
@@ -51,6 +53,8 @@ type Reader interface {
 	ReadInt32() (int32, error)
 	// ReadInt64 read eight bytes and return int64 value
 	ReadInt64() (int64, error)
+	// ReadIntX read X bytes and return int64 value
+	ReadIntX(x int) (int64, error)
 
 	// ReadFloat32 read four bytes and return float32 value
 	ReadFloat32() (float32, error)
@@ -167,6 +171,20 @@ func (r *reader) ReadUint64() (uint64, error) {
 	return r.order.Uint64(b), nil
 }
 
+func (r *reader) ReadUintX(x int) (uint64, error) {
+	var i uint64
+	var err error
+
+	if x > 8 {
+		err = errors.New("cannot read more than 8 bytes for custom length (u)int")
+	}
+
+	_, b, err := r.ReadBytes(x)
+
+	i = r.order.Uint64(append(make([]byte, 8-x), b...))
+	return i, err
+}
+
 func (r *reader) ReadInt8() (int8, error) {
 	i, err := r.ReadUint8()
 	return int8(i), err
@@ -184,6 +202,16 @@ func (r *reader) ReadInt32() (int32, error) {
 
 func (r *reader) ReadInt64() (int64, error) {
 	i, err := r.ReadUint64()
+	return int64(i), err
+}
+
+func (r *reader) ReadIntX(x int) (int64, error) {
+	u, err := r.ReadUintX(x)
+
+	// Properly handle negatives by shifting fully left and then right
+	u = u << (64 - 8*x)
+	i := int64(u) >> (64 - 8*x)
+
 	return int64(i), err
 }
 

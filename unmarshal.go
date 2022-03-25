@@ -124,25 +124,33 @@ or
 	switch fieldValue.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		var value int64
+		var err error
 
-		switch {
-		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Int8:
-			v, e := r.ReadInt8()
-			value = int64(v)
-			err = e
-		case fieldData.Length != nil && *fieldData.Length == 2 || fieldValue.Kind() == reflect.Int16:
-			v, e := r.ReadInt16()
-			value = int64(v)
-			err = e
-		case fieldData.Length != nil && *fieldData.Length == 4 || fieldValue.Kind() == reflect.Int32:
-			v, e := r.ReadInt32()
-			value = int64(v)
-			err = e
-		case fieldData.Length != nil && *fieldData.Length == 8 || fieldValue.Kind() == reflect.Int64:
-			value, err = r.ReadInt64()
-		default: // reflect.Int:
-			err = errors.New("need set tag with len or use int8/int16/int32/int64")
+		if fieldData.Length != nil {
+			value, err = r.ReadIntX(int(*fieldData.Length))
+		} else {
+			switch fieldValue.Kind() {
+			case reflect.Int8:
+				v, e := r.ReadInt8()
+				value = int64(v)
+				err = e
+			case reflect.Int16:
+				v, e := r.ReadInt16()
+				value = int64(v)
+				err = e
+			case reflect.Int32:
+				v, e := r.ReadInt32()
+				value = int64(v)
+				err = e
+			case reflect.Int64:
+				v, e := r.ReadInt64()
+				value = v
+				err = e
+			default: // reflect.Int:
+				return errors.New("need set tag with len or use int8/int16/int32/int64")
+			}
 		}
+
 		if err != nil {
 			return err
 		}
@@ -152,25 +160,33 @@ or
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		var value uint64
+		var err error
 
-		switch {
-		case fieldData.Length != nil && *fieldData.Length == 1 || fieldValue.Kind() == reflect.Uint8:
-			v, e := r.ReadUint8()
-			value = uint64(v)
-			err = e
-		case fieldData.Length != nil && *fieldData.Length == 2 || fieldValue.Kind() == reflect.Uint16:
-			v, e := r.ReadUint16()
-			value = uint64(v)
-			err = e
-		case fieldData.Length != nil && *fieldData.Length == 4 || fieldValue.Kind() == reflect.Uint32:
-			v, e := r.ReadUint32()
-			value = uint64(v)
-			err = e
-		case fieldData.Length != nil && *fieldData.Length == 8 || fieldValue.Kind() == reflect.Uint64:
-			value, err = r.ReadUint64()
-		default: // reflect.Uint:
-			err = errors.New("need set tag with len or use uint8/uint16/uint32/uint64")
+		if fieldData.Length != nil {
+			value, err = r.ReadUintX(int(*fieldData.Length))
+		} else {
+			switch fieldValue.Kind() {
+			case reflect.Uint8:
+				v, e := r.ReadUint8()
+				value = uint64(v)
+				err = e
+			case reflect.Uint16:
+				v, e := r.ReadUint16()
+				value = uint64(v)
+				err = e
+			case reflect.Uint32:
+				v, e := r.ReadUint32()
+				value = uint64(v)
+				err = e
+			case reflect.Uint64:
+				v, e := r.ReadUint64()
+				value = v
+				err = e
+			default: // reflect.Uint:
+				return errors.New("need set tag with len or use uint8/uint16/uint32/uint64")
+			}
 		}
+
 		if err != nil {
 			return err
 		}
