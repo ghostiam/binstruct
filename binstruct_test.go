@@ -88,6 +88,35 @@ func Test_IntLE(t *testing.T) {
 	require.Equal(t, want, actual)
 }
 
+func Test_IntXLE(t *testing.T) {
+	// Test the weird sizes, i.e. not powers of 2
+	data := []byte{
+		0x03, 0x00, 0xf0, // -1048573
+		0x0a, 0xfb, 0xc2, 0x10, 0xf0, // -68438263030
+		0x0a, 0xfb, 0xc2, 0x10, 0xf0, 0x0c, // 14225212898058
+		0x0a, 0xfb, 0xc2, 0x10, 0xf0, 0x0c, 0x7d, // 35198597301730058
+	}
+
+	type dataStruct struct {
+		I3 int32 `bin:"len:3"`
+		I5 int64 `bin:"len:5"`
+		I6 int64 `bin:"len:6"`
+		I7 int64 `bin:"len:7"`
+	}
+
+	want := dataStruct{
+		I3: -1048573,
+		I5: -68438263030,
+		I6: 14225212898058,
+		I7: 35198597301730058,
+	}
+
+	var actual dataStruct
+	err := UnmarshalLE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
 func Test_IntBE(t *testing.T) {
 	data := []byte{
 		0x01,
@@ -105,6 +134,35 @@ func Test_IntBE(t *testing.T) {
 
 	want := dataStruct{
 		I8: 1, I16: 2, I32: 3, I64: 4,
+	}
+
+	var actual dataStruct
+	err := UnmarshalBE(data, &actual)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+}
+
+func Test_IntXBE(t *testing.T) {
+	// Test the weird sizes, i.e. not powers of 2
+	data := []byte{
+		0xf0, 0x00, 0x03, // -1048573
+		0xf0, 0x10, 0xc2, 0xfb, 0x0a, // -68438263030
+		0x0c, 0xf0, 0x10, 0xc2, 0xfb, 0x0a, // 14225212898058
+		0x7d, 0x0c, 0xf0, 0x10, 0xc2, 0xfb, 0x0a, // 35198597301730058
+	}
+
+	type dataStruct struct {
+		I3 int32 `bin:"len:3"`
+		I5 int64 `bin:"len:5"`
+		I6 int64 `bin:"len:6"`
+		I7 int64 `bin:"len:7"`
+	}
+
+	want := dataStruct{
+		I3: -1048573,
+		I5: -68438263030,
+		I6: 14225212898058,
+		I7: 35198597301730058,
 	}
 
 	var actual dataStruct
