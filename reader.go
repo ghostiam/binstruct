@@ -177,9 +177,15 @@ func (r *reader) ReadUintX(x int) (uint64, error) {
 
 	if x > 8 {
 		err = errors.New("cannot read more than 8 bytes for custom length (u)int")
+		return i, err
 	}
 
-	_, b, err := r.ReadBytes(x)
+	n, b, err := r.ReadBytes(x)
+
+	if n != x || err != nil {
+		err = errors.New(fmt.Sprintf("failed to read custom (u)int length: got %d instead of %d", n, x))
+		return i, err
+	}
 
 	if r.order == binary.BigEndian {
 		for j := 0; j < x; j++ {
