@@ -189,11 +189,11 @@ func (r *reader) ReadUintX(x int) (uint64, error) {
 
 	if r.order == binary.BigEndian {
 		for j := 0; j < x; j++ {
-			i |= uint64(b[j]) << (8 * (x - j - 1))
+			i |= uint64(b[x-j-1]) << (8 * j)
 		}
 	} else if r.order == binary.LittleEndian {
 		for j := 0; j < x; j++ {
-			i |= uint64(b[x-j-1]) << (8 * (x - j - 1))
+			i |= uint64(b[j]) << (8 * j)
 		}
 	} else {
 		err = errors.New("cannot determine endianness for custom (u)int length read")
