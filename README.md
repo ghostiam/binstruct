@@ -120,6 +120,8 @@ type Reader interface {
 	ReadUint32() (uint32, error)
 	// ReadUint64 read eight bytes and return uint64 value
 	ReadUint64() (uint64, error)
+	// ReadUintX read X bytes and return uint64 value
+	ReadUintX(x int) (uint64, error)
 
 	// ReadInt8 read one byte and return int8 value
 	ReadInt8() (int8, error)
@@ -129,6 +131,8 @@ type Reader interface {
 	ReadInt32() (int32, error)
 	// ReadInt64 read eight bytes and return int64 value
 	ReadInt64() (int64, error)
+	// ReadIntX read X bytes and return int64 value
+	ReadIntX(x int) (int64, error)
 
 	// ReadFloat32 read four bytes and return float32 value
 	ReadFloat32() (float32, error)
@@ -228,6 +232,10 @@ type test struct {
 
 	// You can override length
 	Field int64 `bin:"len:2"`
+	// Or even use very weird byte lengths for int
+	Field int64 `bin:"len:3"`
+	Field int64 `bin:"len:5"`
+	Field int64 `bin:"len:7"`
 
 	// Fields of type int, uint and string are not read automatically 
 	// because the size is not known, you need to set it manually
@@ -264,7 +272,7 @@ type test struct {
 	IgnoredField []byte `bin:"-"`          // ignore field
 	CallMethod   []byte `bin:"MethodName"` // Call method "MethodName"
 	ReadLength   []byte `bin:"len:42"`     // read 42 bytes
-	
+
 	// Offsets test binstruct_test.go:9
 	Offset      byte `bin:"offset:42"`      // move to 42 bytes from current position and read byte
 	OffsetStart byte `bin:"offsetStart:42"` // move to 42 bytes from start position and read byte
@@ -273,7 +281,7 @@ type test struct {
 
 	// Calculations supported +,-,/,* and are performed from left to right that is 2+2*2=8 not 6!!!
 	CalcTagValue []byte `bin:"len:10+5+2+3"` // equally len:20
-	
+
 	// You can refer to another field to get the value.
 	DataLength              int    // actual length
 	ValueFromOtherField     string `bin:"len:DataLength"`

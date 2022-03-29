@@ -172,30 +172,29 @@ func (r *reader) ReadUint64() (uint64, error) {
 }
 
 func (r *reader) ReadUintX(x int) (uint64, error) {
-	var i uint64 = 0
-	var err error
+	var i uint64
 
 	if x > 8 {
-		err = errors.New("cannot read more than 8 bytes for custom length (u)int")
-		return i, err
+		return 0, errors.New("cannot read more than 8 bytes for custom length (u)int")
 	}
 
-	n, b, err := r.ReadBytes(x)
-
-	if n != x || err != nil {
-		err = errors.New(fmt.Sprintf("failed to read custom (u)int length: got %d instead of %d", n, x))
-		return i, err
+	_, b, err := r.ReadBytes(x)
+	if err != nil {
+		return 0, err
 	}
 
-	if r.order == binary.BigEndian {
+	switch r.order {
+	case binary.BigEndian:
 		for j := 0; j < x; j++ {
 			i |= uint64(b[x-j-1]) << (8 * j)
 		}
-	} else if r.order == binary.LittleEndian {
+
+	case binary.LittleEndian:
 		for j := 0; j < x; j++ {
 			i |= uint64(b[j]) << (8 * j)
 		}
-	} else {
+
+	default:
 		err = errors.New("cannot determine endianness for custom (u)int length read")
 	}
 
@@ -224,12 +223,15 @@ func (r *reader) ReadInt64() (int64, error) {
 
 func (r *reader) ReadIntX(x int) (int64, error) {
 	u, err := r.ReadUintX(x)
+	if err != nil {
+		return 0, err
+	}
 
 	// Properly handle negatives by shifting fully left and then right
 	u = u << (64 - 8*x)
 	i := int64(u) >> (64 - 8*x)
 
-	return int64(i), err
+	return i, nil
 }
 
 func (r *reader) ReadFloat32() (float32, error) {
