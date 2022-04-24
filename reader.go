@@ -96,7 +96,7 @@ func (r *reader) ReadAll() ([]byte, error) {
 	b, err := ioutil.ReadAll(r)
 
 	if r.debug {
-		fmt.Printf("ReadAll(): %s\n", hex.Dump(b))
+		fmt.Printf("ReadAll(): %s", hex.Dump(b))
 	}
 
 	return b, err
@@ -116,7 +116,7 @@ func (r *reader) ReadBytes(n int) (an int, b []byte, err error) {
 	an, err = io.ReadFull(r, b)
 
 	if r.debug {
-		fmt.Printf("Read(want: %d|actual: %d): %s\n", n, an, hex.Dump(b))
+		fmt.Printf("Read(want: %d|actual: %d): %s", n, an, hex.Dump(b))
 	}
 
 	if err != nil {
