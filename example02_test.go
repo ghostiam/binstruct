@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/davecgh/go-spew/spew"
+
 	"github.com/ghostiam/binstruct"
 )
 
@@ -146,7 +147,7 @@ func Example_decodeCustom() {
 	//   },
 	//   TypeLen: (int16) 4,
 	//   Type: (string) (len=4) "test",
-	//   B: ([]uint8) (len=3 cap=4) {
+	//   B: ([]uint8) (len=3 cap=3) {
 	//    00000000  68 69 21                                          |hi!|
 	//   }
 	//  }

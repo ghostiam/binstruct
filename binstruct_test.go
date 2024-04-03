@@ -891,3 +891,29 @@ func Test_LeAndBeInOneStruct(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, wantBE, actual)
 }
+
+func Test_sliceSkipWithoutPanic(t *testing.T) {
+	var v struct {
+		_ []int8 `bin:"len:2"`
+		I int32
+	}
+	err := UnmarshalBE([]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05}, &v)
+	require.NoError(t, err)
+	require.Equal(t, int32(0x02030405), v.I)
+}
+
+func Test_InnerSubField(t *testing.T) {
+	type child struct {
+		Len int8
+	}
+
+	var v struct {
+		Child child
+		S     []byte `bin:"len:Child.Len"`
+	}
+
+	err := UnmarshalBE([]byte{0x05, 0x01, 0x02, 0x03, 0x04, 0x05}, &v)
+	require.NoError(t, err)
+	require.Equal(t, int8(5), v.Child.Len)
+	require.Equal(t, []byte{0x01, 0x02, 0x03, 0x04, 0x05}, v.S)
+}

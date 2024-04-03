@@ -64,7 +64,9 @@ func (u *unmarshal) unmarshal(v interface{}, parentStructValues []reflect.Value)
 	return nil
 }
 
-func (u *unmarshal) setValueToField(structValue, fieldValue reflect.Value, fieldData *fieldReadData, parentStructValues []reflect.Value) error {
+func (u *unmarshal) setValueToField(
+	structValue, fieldValue reflect.Value, fieldData *fieldReadData, parentStructValues []reflect.Value,
+) error {
 	if fieldData == nil {
 		fieldData = &fieldReadData{}
 	}
@@ -239,37 +241,42 @@ or
 			return errors.New("need set tag with len for slice")
 		}
 
-		for i := int64(0); i < *fieldData.Length; i++ {
-			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
-			err = u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
+		arrLen := int(*fieldData.Length)
+
+		// If slice of bytes, read bytes and set to slice.
+		if fieldValue.Type().Elem().Kind() == reflect.Uint8 {
+			n, b, err := u.r.ReadBytes(arrLen)
 			if err != nil {
 				return err
 			}
-			if fieldValue.CanSet() {
-				fieldValue.Set(reflect.Append(fieldValue, tmpV))
+
+			if n != arrLen {
+				return fmt.Errorf("expected %d, got %d", *fieldData.Length, n)
 			}
+
+			if fieldValue.CanSet() {
+				fieldValue.SetBytes(b)
+			}
+
+			return nil
 		}
+
+		if fieldValue.CanSet() {
+			// Create slice before populate.
+			fieldValue.Set(reflect.MakeSlice(fieldValue.Type(), arrLen, arrLen))
+		}
+
+		return u.setArrayValueToField(arrLen, structValue, fieldValue, fieldData, parentStructValues)
+
 	case reflect.Array:
-		var arrLen int64
+		arrLen := fieldValue.Len()
 
 		if fieldData.Length != nil {
-			arrLen = *fieldData.Length
+			arrLen = int(*fieldData.Length)
 		}
 
-		if arrLen == 0 {
-			arrLen = int64(fieldValue.Len())
-		}
+		return u.setArrayValueToField(arrLen, structValue, fieldValue, fieldData, parentStructValues)
 
-		for i := int64(0); i < arrLen; i++ {
-			tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
-			err = u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
-			if err != nil {
-				return err
-			}
-			if fieldValue.CanSet() {
-				fieldValue.Index(int(i)).Set(tmpV)
-			}
-		}
 	case reflect.Struct:
 		err = u.unmarshal(fieldValue.Addr().Interface(), append(parentStructValues, structValue))
 		if err != nil {
@@ -277,6 +284,23 @@ or
 		}
 	default:
 		return errors.New(`type "` + fieldValue.Kind().String() + `" not supported`)
+	}
+
+	return nil
+}
+
+func (u *unmarshal) setArrayValueToField(
+	arrLen int, structValue, fieldValue reflect.Value, fieldData *fieldReadData, parentStructValues []reflect.Value,
+) error {
+	for i := 0; i < arrLen; i++ {
+		tmpV := reflect.New(fieldValue.Type().Elem()).Elem()
+		err := u.setValueToField(structValue, tmpV, fieldData.ElemFieldData, parentStructValues)
+		if err != nil {
+			return err
+		}
+		if fieldValue.CanSet() {
+			fieldValue.Index(i).Set(tmpV)
+		}
 	}
 
 	return nil
