@@ -287,6 +287,13 @@ type test struct {
 	ValueFromOtherField     string `bin:"len:DataLength"`
 	CalcValueFromOtherField string `bin:"len:DataLength+10"` // also work calculations
 
+	// Also supported nested structures.
+	Inner struct {
+		DataLength int // actual length for ValueFromInnerField and CalcValueFromInnerField
+	}
+	ValueFromInnerField string `bin:"len:Inner.DataLength"`
+	CalcValueFromInnerField string `bin:"len:Inner.DataLength+10"`
+
 	// You can change the byte order directly from the tag
 	UInt16LE uint16 `bin:"le"`
 	UInt16BE uint16 `bin:"be"`
