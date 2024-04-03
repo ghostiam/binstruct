@@ -66,12 +66,13 @@ func Test_parseTag(t *testing.T) {
 		},
 		{
 			name: "multi tag",
-			tag:  "len:1, offset:2, offsetStart:3, offsetEnd:4",
+			tag:  "len:1, offset:2, offsetStart:3, offsetEnd:4, offsetRestore",
 			want: []tag{
 				{Type: "len", Value: "1"},
 				{Type: "offset", Value: "2"},
 				{Type: "offsetStart", Value: "3"},
 				{Type: "offsetEnd", Value: "4"},
+				{Type: "offsetRestore"},
 			},
 		},
 		{

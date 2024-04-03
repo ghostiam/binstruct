@@ -26,6 +26,7 @@ const (
 	tagTypeOffsetFromCurrent = "offset"
 	tagTypeOffsetFromStart   = "offsetStart"
 	tagTypeOffsetFromEnd     = "offsetEnd"
+	tagTypeOffsetRestore     = "offsetRestore"
 )
 
 type tag struct {
@@ -58,6 +59,9 @@ func parseTag(t string) ([]tag, error) {
 
 		case v == tagTypeIgnore:
 			tags = append(tags, tag{Type: tagTypeIgnore})
+
+		case v == tagTypeOffsetRestore:
+			tags = append(tags, tag{Type: tagTypeOffsetRestore})
 
 		case strings.HasPrefix(v, "["):
 			v = v + "," + t
@@ -130,11 +134,12 @@ type fieldOffset struct {
 }
 
 type fieldReadData struct {
-	Ignore   bool
-	Length   *int64
-	Offsets  []fieldOffset
-	FuncName string
-	Order    binary.ByteOrder
+	Ignore        bool
+	Length        *int64
+	Offsets       []fieldOffset
+	OffsetRestore bool
+	FuncName      string
+	Order         binary.ByteOrder
 
 	ElemFieldData *fieldReadData // if type Element
 }
@@ -257,6 +262,9 @@ func parseReadDataFromTags(structValue reflect.Value, tags []tag) (*fieldReadDat
 				Offset: offset,
 				Whence: io.SeekEnd,
 			})
+
+		case tagTypeOffsetRestore:
+			data.OffsetRestore = true
 
 		case tagTypeFunc:
 			data.FuncName = t.Value

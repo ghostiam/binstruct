@@ -3,6 +3,7 @@ package binstruct
 import (
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 )
@@ -78,6 +79,14 @@ func (u *unmarshal) setValueToField(
 	r := u.r
 	if fieldData.Order != nil {
 		r = r.WithOrder(fieldData.Order)
+	}
+
+	if fieldData.OffsetRestore {
+		currentOffset, err := r.Seek(0, io.SeekCurrent)
+		if err != nil {
+			return fmt.Errorf("get current offset: %w", err)
+		}
+		defer r.Seek(currentOffset, io.SeekStart)
 	}
 
 	err := setOffset(r, fieldData)
