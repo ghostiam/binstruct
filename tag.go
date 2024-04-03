@@ -198,14 +198,24 @@ func parseValue(structValue reflect.Value, v string) (int64, error) {
 	// parse value or get from field
 	l, err := strconv.ParseInt(v, 10, 0)
 	if err != nil {
-		lenVal := structValue.FieldByName(v)
+		sv := structValue
+
+		split := strings.Split(v, ".")
+		for _, s := range split {
+			sv = sv.FieldByName(s)
+			if sv.Kind() != reflect.Struct {
+				break
+			}
+		}
+
+		lenVal := sv
 		switch lenVal.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			l = lenVal.Int()
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 			l = int64(lenVal.Uint())
 		default:
-			return 0, errors.New("can't get field len from " + v + " field")
+			return 0, errors.New("can't get field len from \"" + v + "\" field")
 		}
 	}
 	return l, nil
