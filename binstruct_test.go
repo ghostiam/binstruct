@@ -917,3 +917,19 @@ func Test_InnerSubField(t *testing.T) {
 	require.Equal(t, int8(5), v.Child.Len)
 	require.Equal(t, []byte{0x01, 0x02, 0x03, 0x04, 0x05}, v.S)
 }
+
+func Test_OffsetRestore(t *testing.T) {
+	var v struct {
+		Offset uint8
+		Size   uint8
+		Data   []byte `bin:"offsetStart:Offset,len:Size,offsetRestore"`
+		Other  []byte `bin:"len:3"`
+	}
+
+	err := UnmarshalBE([]byte{0x05, 0x02, 0x01, 0x02, 0x03, 0x04, 0x05}, &v)
+	require.NoError(t, err)
+	require.Equal(t, uint8(5), v.Offset)
+	require.Equal(t, uint8(2), v.Size)
+	require.Equal(t, []byte{0x04, 0x05}, v.Data)
+	require.Equal(t, []byte{0x01, 0x02, 0x03}, v.Other)
+}

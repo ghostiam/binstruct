@@ -278,6 +278,7 @@ type test struct {
 	OffsetStart byte `bin:"offsetStart:42"` // move to 42 bytes from start position and read byte
 	OffsetEnd   byte `bin:"offsetEnd:-42"`  // move to -42 bytes from end position and read byte
 	OffsetStart byte `bin:"offsetStart:42, offset:10"` // also worked and equally `offsetStart:52`
+	OffsetWithRestore byte `bin:"offset:42, offsetRestore"` // move to 42 bytes from current position and read byte, then restore position to the previous one (before offset)
 
 	// Calculations supported +,-,/,* and are performed from left to right that is 2+2*2=8 not 6!!!
 	CalcTagValue []byte `bin:"len:10+5+2+3"` // equally len:20
