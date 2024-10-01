@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 )
 
@@ -93,7 +92,7 @@ type reader struct {
 }
 
 func (r *reader) ReadAll() ([]byte, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 
 	if r.debug {
 		fmt.Printf("ReadAll(): %s", hex.Dump(b))
